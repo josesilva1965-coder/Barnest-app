@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import type { Table, StaffMember, OrderItem, FloorPlanArea } from '../../types';
+import type { Table, StaffMember, OrderItem, FloorPlanArea, AppSettings } from '../../types';
 import Card from '../ui/Card';
 import { BellIcon, PencilIcon, CheckIcon, XIcon, UserIcon } from '../icons/Icons';
 import Button from '../ui/Button';
@@ -16,6 +16,7 @@ interface FloorPlanProps {
     onAssignServer: (tableId: number, serverName: string) => void;
     tableOrders: Record<number, OrderItem[]>;
     floorPlanAreas: FloorPlanArea[];
+    settings: AppSettings;
 }
 
 const TableBox: React.FC<{ 
@@ -151,7 +152,7 @@ const TableBox: React.FC<{
 };
 
 
-const FloorPlan: React.FC<FloorPlanProps> = ({ tables, onTableSelect, readyTables, currentUser, onUpdateTable, staffMembers, onAssignServer, tableOrders, floorPlanAreas }) => {
+const FloorPlan: React.FC<FloorPlanProps> = ({ tables, onTableSelect, readyTables, currentUser, onUpdateTable, staffMembers, onAssignServer, tableOrders, floorPlanAreas, settings }) => {
     const [isEditingLayout, setIsEditingLayout] = useState(false);
     const [activePlanId, setActivePlanId] = useState<string>(floorPlanAreas[0]?.id || '');
     const [localTables, setLocalTables] = useState<Table[]>([]);
@@ -310,6 +311,7 @@ const FloorPlan: React.FC<FloorPlanProps> = ({ tables, onTableSelect, readyTable
                     isOpen={!!qrCodeModalTable}
                     onClose={() => setQrCodeModalTable(null)}
                     table={qrCodeModalTable}
+                    settings={settings}
                 />
             )}
         </div>

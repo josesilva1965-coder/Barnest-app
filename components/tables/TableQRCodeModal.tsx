@@ -1,19 +1,58 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
-import { Table } from '../../types';
+import { Table, AppSettings } from '../../types';
+import { ClipboardIcon, CheckIcon } from '../icons/Icons';
 
 interface TableQRCodeModalProps {
   isOpen: boolean;
   onClose: () => void;
   table: Table;
+  settings: AppSettings;
 }
 
-const TableQRCodeModal: React.FC<TableQRCodeModalProps> = ({ isOpen, onClose, table }) => {
+const TableQRCodeModal: React.FC<TableQRCodeModalProps> = ({ isOpen, onClose, table, settings }) => {
+  const [isCopied, setIsCopied] = useState(false);
+
   if (!isOpen) return null;
 
-  const orderUrl = `${window.location.origin}${window.location.pathname}?table=${table.id}`;
-  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(orderUrl)}&bgcolor=1a1a1a&color=f8f9fa&qzone=1`;
+  const baseUrlSetting = settings.baseUrl?.trim();
+  const hasValidBaseUrlSetting = baseUrlSetting && baseUrlSetting.startsWith('http');
+
+  // A robust, simplified logic for generating the root URL.
+  let rootUrl;
+  if (hasValidBaseUrlSetting) {
+    // Use the explicit URL from settings if available and valid.
+    rootUrl = baseUrlSetting;
+  } else {
+    // Otherwise, derive it from the current window location by stripping query params and hash.
+    rootUrl = window.location.href.split('?')[0].split('#')[0];
+  }
+  
+  // Clean up common file names and trailing slashes to ensure a clean base URL.
+  if (rootUrl.endsWith('/index.html')) {
+      rootUrl = rootUrl.slice(0, -'/index.html'.length);
+  }
+  if (rootUrl.endsWith('/')) {
+      rootUrl = rootUrl.slice(0, -1);
+  }
+
+  // The customer-facing URL should direct to the app with a hash-based query for the table ID.
+  // Using `/#?` is a standard pattern for single-page applications.
+  const orderUrl = `${rootUrl}/#?view=customer&table=${table.id}`;
+
+  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(orderUrl)}&bgcolor=f8f9fa&color=1a1a1a&qzone=1`;
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(orderUrl).then(() => {
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000); // Reset after 2 seconds
+    }).catch(err => {
+        console.error('Failed to copy link: ', err);
+        alert('Failed to copy link.');
+    });
+  };
 
   const handlePrint = () => {
     const printWindow = window.open('', '_blank');
@@ -24,7 +63,7 @@ const TableQRCodeModal: React.FC<TableQRCodeModalProps> = ({ isOpen, onClose, ta
                     <title>Print QR Code for ${table.name}</title>
                     <style>
                         body { font-family: sans-serif; text-align: center; margin: 40px; }
-                        img { max-width: 100%; }
+                        img { max-width: 100%; border: 1px solid #ccc; padding: 10px; }
                         h1 { font-size: 24px; }
                         p { font-size: 16px; }
                     </style>
@@ -53,6 +92,13 @@ const TableQRCodeModal: React.FC<TableQRCodeModalProps> = ({ isOpen, onClose, ta
           <p className="text-lg text-gray-300">
             Customers can scan this code to order from their table.
           </p>
+
+          {!hasValidBaseUrlSetting && (
+            <div className="mt-4 p-3 bg-yellow-500/20 text-yellow-300 text-sm rounded-lg border border-yellow-500">
+              <strong>Warning:</strong> The public URL for this app is not set. This QR code may not work for customers. A manager should set the 'Base URL' in the Settings menu.
+            </div>
+          )}
+
           <div className="my-4 p-4 bg-brand-light rounded-lg">
             <img 
               src={qrCodeUrl}
@@ -61,13 +107,28 @@ const TableQRCodeModal: React.FC<TableQRCodeModalProps> = ({ isOpen, onClose, ta
               height="250"
             />
           </div>
-          <div className="w-full space-y-3">
+          <div className="w-full grid grid-cols-2 gap-3">
              <Button 
                 onClick={handlePrint}
                 variant="primary"
                 className="w-full"
             >
                 Print
+            </Button>
+            <Button 
+                onClick={handleCopyLink}
+                variant="secondary"
+                className="w-full flex items-center justify-center gap-2"
+            >
+                {isCopied ? (
+                    <>
+                        <CheckIcon className="w-5 h-5" /> Copied!
+                    </>
+                ) : (
+                    <>
+                        <ClipboardIcon className="w-5 h-5" /> Copy Link
+                    </>
+                )}
             </Button>
           </div>
         </div>

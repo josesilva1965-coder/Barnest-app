@@ -1,5 +1,3 @@
-import { StarIcon } from "./components/icons/Icons";
-
 export enum View {
   POS = 'POS',
   KDS = 'KDS',
@@ -159,6 +157,7 @@ export interface AppSettings {
   taxRate: number; // Stored as a percentage, e.g., 8 for 8%
   language: 'en' | 'es';
   theme: 'dark' | 'light';
+  baseUrl?: string;
 }
 
 export interface PurchaseOrder {

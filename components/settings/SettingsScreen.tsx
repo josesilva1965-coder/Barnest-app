@@ -115,6 +115,25 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ settings, onUpdateSetti
         </div>
       </Card>
 
+      <Card title="Public URL / QR Code Settings">
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="base-url" className="block text-lg font-medium text-brand-accent mb-1">Base URL</label>
+            <input
+              type="text"
+              id="base-url"
+              value={settings.baseUrl || ''}
+              onChange={(e) => onUpdateSettings({ baseUrl: e.target.value })}
+              className="w-full p-2 rounded bg-brand-primary border border-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-secondary"
+              placeholder="https://your-restaurant-url.com"
+            />
+            <p className="text-sm text-gray-400 mt-2">
+              <strong>Important:</strong> Enter the main public URL of this application here. This is required for customer-facing QR codes to work correctly. Do not include a trailing slash.
+            </p>
+          </div>
+        </div>
+      </Card>
+
       <Card title="Menu Management" titleExtra={<Button onClick={() => setIsAddMenuItemModalOpen(true)}>Add Menu Item</Button>}>
         <div className="space-y-2 max-h-72 overflow-y-auto pr-2">
             {menuItems.map(item => (

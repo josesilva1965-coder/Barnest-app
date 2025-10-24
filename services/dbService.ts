@@ -143,7 +143,7 @@ const openDb = (): Promise<IDBDatabase> => {
       seedData(STORES.FLOOR_PLAN_AREAS, FLOOR_PLAN_AREAS);
 
       const settingsStore = transaction!.objectStore(STORES.SETTINGS);
-      settingsStore.put({ id: 'appSettings', taxRate: 8.0, language: 'en', theme: 'dark' });
+      settingsStore.put({ id: 'appSettings', taxRate: 8.0, language: 'en', theme: 'dark', baseUrl: '' });
       settingsStore.put({ id: 'operatingExpenses', rent: 5000, insurance: 500, utilities: 800 });
     };
   });
@@ -285,7 +285,6 @@ export const deletePurchaseOrder = (id: number) => deleteItem(STORES.PURCHASE_OR
 
 // Time Clock
 export const getAllTimeClockEntries = () => getAll<TimeClockEntry>(STORES.TIME_CLOCK_ENTRIES);
-// FIX: The generic 'add' helper has a type constraint requiring an 'id' property, which TimeClockEntry lacks. This custom implementation adds the entry directly, resolving the type error.
 export const addTimeClockEntry = async (entry: TimeClockEntry): Promise<TimeClockEntry> => {
     const store = await getStore(STORES.TIME_CLOCK_ENTRIES, 'readwrite');
     return new Promise((resolve, reject) => {

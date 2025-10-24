@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
@@ -68,18 +69,14 @@ const WastageLogger: React.FC<{ inventory: InventoryItem[], onLogWastage: Invent
     const [error, setError] = useState('');
 
     const groupedInventory = useMemo(() => {
-        // FIX: Replaced reduce with a for...of loop for more robust type inference.
-        // This ensures `groupedInventory` is correctly typed, preventing downstream errors
-        // where `items` was inferred as `unknown`.
-        const groups: Record<string, InventoryItem[]> = {};
-        for (const item of inventory) {
+        return inventory.reduce((acc, item) => {
             const category = item.category;
-            if (!groups[category]) {
-                groups[category] = [];
+            if (!acc[category]) {
+                acc[category] = [];
             }
-            groups[category].push(item);
-        }
-        return groups;
+            acc[category].push(item);
+            return acc;
+        }, {} as Record<string, InventoryItem[]>);
     }, [inventory]);
 
 
@@ -99,62 +96,68 @@ const WastageLogger: React.FC<{ inventory: InventoryItem[], onLogWastage: Invent
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-                <label htmlFor="item-select" className="block text-sm font-medium text-gray-300 mb-1">Item</label>
-                <select 
-                    id="item-select"
-                    value={selectedItem}
-                    onChange={(e) => setSelectedItem(e.target.value)}
-                    className="w-full p-2 rounded bg-brand-primary border border-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-secondary"
-                >
-                    <option value="" disabled>Select an item...</option>
-                    {Object.entries(groupedInventory).sort(([catA], [catB]) => catA.localeCompare(catB)).map(([category, items]) => (
-                        <optgroup key={category} label={category}>
-                            {items.sort((a,b) => a.name.localeCompare(b.name)).map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
-                        </optgroup>
-                    ))}
-                </select>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-                 <div>
-                    <label htmlFor="amount" className="block text-sm font-medium text-gray-300 mb-1">Amount Wasted</label>
+        <Card title="Log Wastage" className="h-full">
+        <form onSubmit={handleSubmit} className="space-y-4 flex flex-col h-full">
+            <div className="flex-grow">
+                <div>
+                    <label htmlFor="item-select" className="block text-sm font-medium text-gray-300 mb-1">Item</label>
+                    <select 
+                        id="item-select"
+                        value={selectedItem}
+                        onChange={(e) => setSelectedItem(e.target.value)}
+                        className="w-full p-2 rounded bg-brand-primary border border-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-secondary"
+                    >
+                        <option value="" disabled>Select an item...</option>
+                        {Object.keys(groupedInventory).sort((catA, catB) => catA.localeCompare(catB)).map((category) => (
+                            <optgroup key={category} label={category}>
+                                {[...groupedInventory[category]].sort((a,b) => a.name.localeCompare(b.name)).map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
+                            </optgroup>
+                        ))}
+                    </select>
+                </div>
+                <div className="grid grid-cols-2 gap-4 mt-4">
+                     <div>
+                        <label htmlFor="amount" className="block text-sm font-medium text-gray-300 mb-1">Amount Wasted</label>
+                        <input 
+                            type="number"
+                            id="amount"
+                            value={amount}
+                            onChange={(e) => setAmount(e.target.value)}
+                            placeholder="e.g., 1.5"
+                            step="any"
+                            min="0"
+                            className="w-full p-2 rounded bg-brand-primary border border-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-secondary"
+                        />
+                    </div>
+                     <div>
+                        <label htmlFor="unit" className="block text-sm font-medium text-gray-300 mb-1">Unit</label>
+                        <input 
+                            type="text"
+                            id="unit"
+                            disabled
+                            value={inventory.find(i => i.id === selectedItem)?.unit || ''}
+                            className="w-full p-2 rounded bg-brand-dark border border-gray-700 text-gray-400"
+                        />
+                    </div>
+                </div>
+                <div className="mt-4">
+                    <label htmlFor="reason" className="block text-sm font-medium text-gray-300 mb-1">Reason (Optional)</label>
                     <input 
-                        type="number"
-                        id="amount"
-                        value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
-                        placeholder="e.g., 1.5"
-                        step="any"
-                        min="0"
+                        type="text"
+                        id="reason"
+                        value={reason}
+                        onChange={(e) => setReason(e.target.value)}
+                        placeholder="e.g., Spoiled"
                         className="w-full p-2 rounded bg-brand-primary border border-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-secondary"
                     />
                 </div>
-                 <div>
-                    <label htmlFor="unit" className="block text-sm font-medium text-gray-300 mb-1">Unit</label>
-                    <input 
-                        type="text"
-                        id="unit"
-                        disabled
-                        value={inventory.find(i => i.id === selectedItem)?.unit || ''}
-                        className="w-full p-2 rounded bg-brand-dark border border-gray-700 text-gray-400"
-                    />
-                </div>
             </div>
-            <div>
-                <label htmlFor="reason" className="block text-sm font-medium text-gray-300 mb-1">Reason (Optional)</label>
-                <input 
-                    type="text"
-                    id="reason"
-                    value={reason}
-                    onChange={(e) => setReason(e.target.value)}
-                    placeholder="e.g., Spoiled"
-                    className="w-full p-2 rounded bg-brand-primary border border-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-secondary"
-                />
+            <div className="mt-auto">
+                <Button type="submit" variant="danger" className="w-full">Log Wastage</Button>
+                {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
             </div>
-            <Button type="submit" variant="danger" className="w-full">Log Wastage</Button>
-            {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
         </form>
+        </Card>
     );
 };
 
@@ -165,18 +168,14 @@ const InventoryDashboard: React.FC<InventoryDashboardProps> = ({ inventory, wast
   const [reorderModalItem, setReorderModalItem] = useState<InventoryItem | null>(null);
 
   const groupedInventory = useMemo(() => {
-    // FIX: Replaced reduce with a for...of loop for more robust type inference.
-    // This ensures `groupedInventory` is correctly typed, preventing downstream errors
-    // where `items` was inferred as `unknown`.
-    const groups: Record<string, InventoryItem[]> = {};
-    for (const item of inventory) {
+    return inventory.reduce((acc, item) => {
         const category = item.category;
-        if (!groups[category]) {
-            groups[category] = [];
+        if (!acc[category]) {
+            acc[category] = [];
         }
-        groups[category].push(item);
-    }
-    return groups;
+        acc[category].push(item);
+        return acc;
+    }, {} as Record<string, InventoryItem[]>);
   }, [inventory]);
 
   const [openCategories, setOpenCategories] = useState<string[]>([]);
@@ -196,18 +195,15 @@ const InventoryDashboard: React.FC<InventoryDashboardProps> = ({ inventory, wast
   };
   
   const handleCategoryLinkClick = (category: string) => {
-    // Ensure the category is open before scrolling
     if (!openCategories.includes(category)) {
         setOpenCategories(prev => [...prev, category]);
     }
-
-    // Use a timeout to allow the accordion to open before scrolling
     setTimeout(() => {
         const container = listContainerRef.current;
         const element = categoryRefs.current[category];
         if (container && element) {
             container.scrollTo({
-                top: element.offsetTop,
+                top: element.offsetTop - container.offsetTop,
                 behavior: 'smooth',
             });
         }
@@ -263,40 +259,13 @@ const InventoryDashboard: React.FC<InventoryDashboardProps> = ({ inventory, wast
                 )}
             </div>
         </Card>
-        <Card title="Wastage History">
-            <div className="overflow-y-auto max-h-80 pr-2">
-                {wastageLog.length > 0 ? (
-                    <table className="w-full text-left">
-                         <thead>
-                            <tr className="border-b border-brand-primary">
-                                <th className="p-2 text-sm">Item</th>
-                                <th className="p-2 text-sm">Amount</th>
-                                <th className="p-2 text-sm hidden md:table-cell">Reason</th>
-                                <th className="p-2 text-sm">Date</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {wastageLog.map(log => (
-                                 <tr key={log.id} className="border-b border-brand-primary/50 text-sm">
-                                    <td className="p-2">{log.itemName}</td>
-                                    <td className="p-2 text-red-400">-{log.amount} {log.unit}</td>
-                                    <td className="p-2 hidden md:table-cell">{log.reason || 'N/A'}</td>
-                                    <td className="p-2 text-gray-400">{log.timestamp.toLocaleDateString()}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                ) : (
-                    <p className="text-gray-400 text-center py-12">No wastage recorded yet.</p>
-                )}
-            </div>
-        </Card>
+        <WastageLogger inventory={inventory} onLogWastage={onLogWastage} />
       </div>
 
        <Card title="Full Inventory List">
             <div className="flex flex-wrap gap-2 mb-4 pb-4 border-b border-brand-primary">
                 <span className="text-sm font-semibold text-gray-300 self-center mr-2">Go to:</span>
-                {Object.entries(groupedInventory).sort(([catA], [catB]) => catA.localeCompare(catB)).map(([category]) => (
+                {Object.keys(groupedInventory).sort((catA, catB) => catA.localeCompare(catB)).map((category) => (
                     <button
                         key={category}
                         onClick={() => handleCategoryLinkClick(category)}
@@ -307,7 +276,9 @@ const InventoryDashboard: React.FC<InventoryDashboardProps> = ({ inventory, wast
                 ))}
             </div>
             <div ref={listContainerRef} className="space-y-2 max-h-[26rem] overflow-y-auto pr-2">
-                {Object.entries(groupedInventory).sort(([catA], [catB]) => catA.localeCompare(catB)).map(([category, items]) => (
+                {Object.keys(groupedInventory).sort((catA, catB) => catA.localeCompare(catB)).map((category) => {
+                    const items = groupedInventory[category];
+                    return (
                     <div 
                         key={category}
                         ref={(el): void => { categoryRefs.current[category] = el; }}
@@ -335,7 +306,7 @@ const InventoryDashboard: React.FC<InventoryDashboardProps> = ({ inventory, wast
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {items.sort((a,b) => a.name.localeCompare(b.name)).map(item => (
+                                            {[...items].sort((a,b) => a.name.localeCompare(b.name)).map(item => (
                                                 <tr key={item.id} className="border-b border-brand-primary/50 hover:bg-brand-primary/30">
                                                     <td className="p-2">{item.name}</td>
                                                     <td className="p-2">{item.stock.toFixed(2)} {item.unit}</td>
@@ -353,7 +324,7 @@ const InventoryDashboard: React.FC<InventoryDashboardProps> = ({ inventory, wast
                             </div>
                         )}
                     </div>
-                ))}
+                )})}
             </div>
         </Card>
 

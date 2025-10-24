@@ -1,6 +1,6 @@
+
 import React from 'react';
 
-// FIX: Extend React.HTMLAttributes<HTMLDivElement> to allow passing standard div props like onClick.
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   title?: string;
   titleExtra?: React.ReactNode;

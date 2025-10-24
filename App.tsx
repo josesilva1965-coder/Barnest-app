@@ -1,6 +1,4 @@
 
-
-
 import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import PosScreen from './components/pos/PosScreen';
@@ -46,7 +44,7 @@ const App: React.FC = () => {
   const [tableOrders, setTableOrders] = useState<Record<number, OrderItem[]>>({});
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [settings, setSettings] = useState<AppSettings>({ taxRate: 8.0, language: 'en', theme: 'dark' });
+  const [settings, setSettings] = useState<AppSettings>({ taxRate: 8.0, language: 'en', theme: 'dark', baseUrl: '' });
   const [throttlingConfig, setThrottlingConfig] = useState({ kitchen: { enabled: false, capacity: 5 }, bar: { enabled: false, capacity: 8 }});
   const [heldOrders, setHeldOrders] = useState<Order[]>([]);
   const [reservations, setReservations] = useState<Reservation[]>([]);
@@ -75,6 +73,45 @@ const App: React.FC = () => {
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  // URL Routing Effect for Customer Views
+  useEffect(() => {
+    const parseUrlAndSetView = () => {
+      const hash = window.location.hash;
+
+      if (hash) {
+          const paramsString = hash.startsWith('#?') ? hash.substring(2) : hash.substring(1);
+          const params = new URLSearchParams(paramsString);
+          const view = params.get('view');
+          const tableIdParam = params.get('table');
+          const isCustomerView = view === 'customer';
+          const hasTableId = tableIdParam && !isNaN(parseInt(tableIdParam, 10));
+
+          // If we have a table ID but no explicit view, assume it's a customer trying to order.
+          // This provides a fallback for older QR codes or caching issues.
+          if ((isCustomerView && hasTableId) || (!view && hasTableId)) {
+              setCustomerView('ordering');
+              setCustomerTableId(parseInt(tableIdParam!, 10));
+              return;
+          } else if (view === 'reserve') {
+              setCustomerView('booking');
+              setCustomerTableId(null);
+              return;
+          }
+      }
+      
+      // If no valid customer view is found, default to staff view
+      setCustomerView(null);
+      setCustomerTableId(null);
+    };
+
+    parseUrlAndSetView(); // Run on initial load
+
+    window.addEventListener('hashchange', parseUrlAndSetView);
+    return () => {
+        window.removeEventListener('hashchange', parseUrlAndSetView);
     };
   }, []);
 
@@ -142,30 +179,11 @@ const App: React.FC = () => {
     loadData();
   }, []);
 
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const tableId = params.get('table');
-    const view = params.get('view');
-
-    if (tableId) {
-      setCustomerTableId(parseInt(tableId, 10));
-      setCustomerView('ordering');
-    } else if (view === 'reserve') {
-      setCustomerView('booking');
-    }
-  }, []);
-
-  const handleGoToCustomerReservations = () => setCustomerView('booking');
+  const handleGoToCustomerReservations = () => {
+    window.location.hash = '#?view=reserve';
+  };
   const handleGoHome = () => {
-    setCustomerView(null);
-    setCustomerTableId(null);
-    try {
-      // This can fail in sandboxed environments (e.g., blob URLs)
-      window.history.pushState({}, '', window.location.pathname);
-    } catch (e) {
-      console.warn("Could not modify history state due to sandbox restrictions:", e);
-    }
+    window.location.hash = '';
   };
 
   const handleUpdateOperatingExpenses = async (newExpenses: Partial<typeof operatingExpenses>) => {
@@ -689,9 +707,13 @@ const App: React.FC = () => {
   // Customer-facing view routing
   if (customerView === 'ordering' && customerTableId) {
     const table = tables.find(t => t.id === customerTableId);
-    // FIX: Pass table.id to the handler, which is guaranteed to be a number,
-    // instead of customerTableId from state, which is number | null.
-    if (table) return <CustomerOrderScreen table={table} menuItems={menuItems} onSendOrder={(newItems) => handleCustomerOrder(table.id, newItems)} />;
+    const currentOrder = tableOrders[customerTableId] || [];
+    if (table) return <CustomerOrderScreen 
+      table={table} 
+      menuItems={menuItems} 
+      onSendOrder={(newItems) => handleCustomerOrder(table.id, newItems)}
+      currentOrder={currentOrder}
+    />;
     else return <div className="flex items-center justify-center h-screen bg-brand-dark text-white">Table not found.</div>;
   }
   if (customerView === 'booking') {
@@ -734,6 +756,7 @@ const App: React.FC = () => {
             tables={tables} onTableSelect={handleTableSelect} readyTables={readyTables}
             currentUser={currentUser!} onUpdateTable={handleUpdateTable} staffMembers={STAFF_DATA}
             onAssignServer={handleAssignServer} tableOrders={tableOrders} floorPlanAreas={visibleFloorPlanAreas}
+            settings={settings}
         />;
       case View.Reservations:
         return <ReservationsScreen reservations={reservations} onAddReservation={handleAddReservation} />;
@@ -741,7 +764,9 @@ const App: React.FC = () => {
         return <ReportsDashboard menuItems={menuItems} operatingExpenses={operatingExpenses} onUpdateOperatingExpenses={handleUpdateOperatingExpenses} />;
       case View.Staff:
         return <StaffSchedule 
-          shifts={shifts} swapRequests={shiftSwapRequests} staffAvailability={staffAvailability}
+          shifts={shifts} 
+          swapRequests={shiftSwapRequests}
+          staffAvailability={staffAvailability}
           onShiftAction={handleShiftAction} onUpdateShift={handleUpdateShift} onAddShift={handleAddShift}
           onDeleteShift={handleDeleteShift} onSetAvailability={handleSetAvailability} currentUser={currentUser!}
           timeClockEntries={timeClockEntries} onClockIn={handleClockIn} onClockOut={handleClockOut}
@@ -759,6 +784,7 @@ const App: React.FC = () => {
             tables={tables} onTableSelect={handleTableSelect} readyTables={readyTables}
             currentUser={currentUser!} onUpdateTable={handleUpdateTable} staffMembers={STAFF_DATA}
             onAssignServer={handleAssignServer} tableOrders={tableOrders} floorPlanAreas={visibleFloorPlanAreas}
+            settings={settings}
         />;
     }
   };

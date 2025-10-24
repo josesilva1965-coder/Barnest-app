@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import type { OrderItem, Split } from '../../types';
 import Card from '../ui/Card';
@@ -30,9 +31,16 @@ const SplitCheckModal: React.FC<SplitCheckModalProps> = ({ orderItems, orderTota
   const [itemSplits, setItemSplits] = useState<OrderItem[][]>([[]]);
   const [activeSplitIndex, setActiveSplitIndex] = useState(0);
 
-  const unassignedItems = useMemo(() => {
-    const assignedInstanceIds = new Set(itemSplits.flat().map(i => i.instanceId));
-    return orderItems.filter(item => !assignedInstanceIds.has(item.instanceId));
+  const unassignedItemsWithQuantities = useMemo(() => {
+    const assignedCounts: Record<number, number> = {};
+    itemSplits.flat().forEach(item => {
+        assignedCounts[item.instanceId] = (assignedCounts[item.instanceId] || 0) + item.quantity;
+    });
+
+    return orderItems.map(originalItem => ({
+        ...originalItem,
+        unassignedQuantity: originalItem.quantity - (assignedCounts[originalItem.instanceId] || 0)
+    })).filter(item => item.unassignedQuantity > 0);
   }, [orderItems, itemSplits]);
 
   const addSplit = () => {
@@ -41,23 +49,17 @@ const SplitCheckModal: React.FC<SplitCheckModalProps> = ({ orderItems, orderTota
   };
 
   const assignItemToSplit = (item: OrderItem) => {
-    // Create a single-quantity version of the item
-    const itemToMove: OrderItem = { ...item, quantity: 1 };
-    
-    // Decrement from original order or remove if quantity is 1
-    const originalItem = orderItems.find(i => i.instanceId === item.instanceId)!;
-    originalItem.quantity -= 1; // This mutation is local to the modal's lifecycle logic.
-
     setItemSplits(prev => {
-        const newSplits = [...prev];
-        const currentSplit = [...newSplits[activeSplitIndex]];
-
-        // Check if an identical item is already in the split
-        const existingItemInSplit = currentSplit.find(i => i.instanceId === itemToMove.instanceId);
-        if (existingItemInSplit) {
-            existingItemInSplit.quantity += 1;
+        const newSplits = prev.map(split => [...split]);
+        const currentSplit = newSplits[activeSplitIndex];
+        
+        const existingItemIndex = currentSplit.findIndex(i => i.instanceId === item.instanceId);
+        if (existingItemIndex > -1) {
+            // Avoid direct state mutation
+            const updatedItem = { ...currentSplit[existingItemIndex], quantity: currentSplit[existingItemIndex].quantity + 1 };
+            currentSplit[existingItemIndex] = updatedItem;
         } else {
-            currentSplit.push(itemToMove);
+            currentSplit.push({ ...item, quantity: 1 });
         }
         newSplits[activeSplitIndex] = currentSplit;
         return newSplits;
@@ -87,7 +89,7 @@ const SplitCheckModal: React.FC<SplitCheckModalProps> = ({ orderItems, orderTota
     }
   };
   
-  const allItemsAssigned = unassignedItems.flatMap(i => Array(i.quantity).fill(i)).length === 0;
+  const allItemsAssigned = unassignedItemsWithQuantities.length === 0;
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
@@ -117,8 +119,8 @@ const SplitCheckModal: React.FC<SplitCheckModalProps> = ({ orderItems, orderTota
                     <div>
                         <h4 className="font-bold mb-2">Unassigned Items</h4>
                         <div className="space-y-2 p-2 bg-brand-primary/20 rounded-lg max-h-80 overflow-y-auto">
-                            {unassignedItems.flatMap(item => Array(item.quantity).fill(item)).length > 0 ? (
-                                unassignedItems.flatMap(item => Array(item.quantity).fill(item).map((singleItem, index) => (
+                            {unassignedItemsWithQuantities.length > 0 ? (
+                                unassignedItemsWithQuantities.flatMap(item => Array(item.unassignedQuantity).fill(item).map((singleItem, index) => (
                                     <div key={`${singleItem.instanceId}-${index}`} onClick={() => assignItemToSplit(singleItem)} className="p-2 bg-brand-primary/50 rounded flex justify-between items-center cursor-pointer hover:bg-brand-secondary/50">
                                         <span>{singleItem.name}</span>
                                         <span>${(singleItem.price + singleItem.modifiers.reduce((a,c)=>a+c.priceChange,0)).toFixed(2)}</span>
@@ -132,7 +134,6 @@ const SplitCheckModal: React.FC<SplitCheckModalProps> = ({ orderItems, orderTota
                     <div>
                         <div className="flex justify-between items-center mb-2">
                              <h4 className="font-bold">Current Splits</h4>
-                             {/* FIX: Removed invalid 'size' prop and used className for styling instead. */}
                              <Button onClick={addSplit} variant="secondary" className="text-xs px-2 py-1">+ New Split</Button>
                         </div>
                         <div className="space-y-2 max-h-80 overflow-y-auto pr-2">

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Order, OrderStatus } from '../../types';
 import Card from '../ui/Card';
@@ -18,10 +19,8 @@ const formatDuration = (ms: number) => {
 
 // Custom hook to get the previous value of a prop or state
 const usePrevious = <T,>(value: T): T | undefined => {
-    // FIX: `useRef<T>()` is invalid without an initial value when strict null checks are enabled.
-    // Initialize with `undefined` and update the type to `T | undefined` to fix the error.
+    // FIX: The useRef hook requires an initial value. It was called with no arguments.
     const ref = useRef<T | undefined>(undefined);
-    // FIX: Add `value` to the dependency array to ensure the ref is updated when the value changes.
     useEffect(() => {
         ref.current = value;
     }, [value]);
@@ -39,11 +38,11 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdateStatus, alertThres
     // Memoize the audio objects to avoid creating them on every render
     if (!alertSoundRef.current) {
         // A simple, short beep sound for late alerts
-        alertSoundRef.current = new Audio('data:audio/wav;base64,UklGRkIAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAAAA//8/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8A==');
+        alertSoundRef.current = new Audio('data:audio/wav;base64,UklGRkIAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAAAA//8/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8A==');
     }
     if (!readySoundRef.current) {
         // A more pleasant chime for when an order is ready
-        readySoundRef.current = new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVWIv09Pv/8/v+H/3/3/5/7f9v/P/D/y/8//5/5/+f/T/0//f/H/5/9v/3/x/5P/b/9/8//j/9//0//P/H/0/9v/z/x//v/3/7/5v/b/9/8v/P/7//f/L/z/+f/3/7/5//P/7/9f/3/z/+f/3/+f/z/+//X/9/8v/P/5//f/r/2/+f/z/+//X/9/8v/P/5//f/r/2/+f/z/+//X/9/8v/P/5//f/r/2/+f/z/+//X/9/8v/P/5//f/r/2/+f/z/+//X/9/8v/P/5//f/r/2/+f/z/+//X/9/8v/P/5//f/r/2/+f/z/+//X/9/8v/P/5//f/r/2/+f/z/+//X/9/8v/P/5//f/r/2/+f/z/+//X/9/8v/P/5//f/r/2/+f/z/+//X/9/8v/P/5//f/r/2/+f/z/+//X/9/8v/P/5/9//g==');
+        readySoundRef.current = new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVWIv09Pv/8/v+H/3/3/5/7f9v/P/D/y/8//5/5/+f/T/0//f/H/5/9v/3/x/5P/b/9/8//j/9//0//P/H/0/9v/z/x//v/3/7/5v/b/9/8v/P/7//f/L/z/+f/3/7/5//P/7/9f/3/z/+f/3/+f/z/+//X/9/8v/P/5//f/r/2/+f/z/+//X/9/8v/P/5//f/r/2/+f/z/+//X/9/8v/P/5//f/r/2/+f/z/+//X/9/8v/P/5//f/r/2/+f/z/+//X/9/8v/P/5//f/r/2/+f/z/+//X/9/8v/P/5//f/r/2/+f/z/+//X/9/8v/P/5//f/r/2/+f/z/+//X/9/8v/P/5//f/r/2/+f/z/+//X/9/8v/P/5/9//g==');
     }
 
     useEffect(() => {
