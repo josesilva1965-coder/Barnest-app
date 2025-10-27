@@ -235,7 +235,6 @@ const CustomerOrderScreen: React.FC<CustomerOrderScreenProps> = ({ table, menuIt
             {newItemsInCart.length > 0 && (
                 <button
                     onClick={() => setIsCartOpen(true)}
-                    aria-label="shopping cart"
                     className="fixed bottom-6 right-6 bg-brand-secondary text-white rounded-full p-4 shadow-lg flex items-center gap-2 animate-bounce"
                 >
                     <ShoppingCartIcon className="w-6 h-6" />
