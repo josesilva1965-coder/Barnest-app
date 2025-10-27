@@ -54,6 +54,19 @@ const STORES = {
 
 let dbPromise: Promise<IDBDatabase> | null = null;
 
+const broadcastChangeEvent = (storeName: string, key?: any) => {
+    try {
+        // Use a unique value to ensure the 'storage' event fires even if the data is the same
+        localStorage.setItem('barnest-db-change', JSON.stringify({
+            storeName,
+            key,
+            timestamp: Date.now()
+        }));
+    } catch (e) {
+        console.warn("Could not write to localStorage for live sync.", e);
+    }
+};
+
 const openDb = (): Promise<IDBDatabase> => {
   if (dbPromise) {
     return dbPromise;
@@ -181,6 +194,7 @@ const add = async <T extends {id?: any}>(storeName: string, item: Omit<T, 'id'>)
     return new Promise((resolve, reject) => {
         const request = store.add(item);
         request.onsuccess = () => {
+            broadcastChangeEvent(storeName, request.result);
             const newItemRequest = store.get(request.result);
             newItemRequest.onsuccess = () => resolve(newItemRequest.result);
             newItemRequest.onerror = () => reject(newItemRequest.error);
@@ -189,11 +203,14 @@ const add = async <T extends {id?: any}>(storeName: string, item: Omit<T, 'id'>)
     });
 };
 
-const put = async <T>(storeName: string, item: T): Promise<T> => {
+const put = async <T>(storeName: string, item: T, key?: any): Promise<T> => {
   const store = await getStore(storeName, 'readwrite');
   return new Promise((resolve, reject) => {
     const request = store.put(item);
-    request.onsuccess = () => resolve(item); // Put returns the key, not the item. Resolve with original item.
+    request.onsuccess = () => {
+        broadcastChangeEvent(storeName, key ?? request.result);
+        resolve(item);
+    };
     request.onerror = () => reject(request.error);
   });
 };
@@ -202,7 +219,10 @@ const deleteItem = async (storeName: string, key: IDBValidKey): Promise<void> =>
   const store = await getStore(storeName, 'readwrite');
   return new Promise((resolve, reject) => {
     const request = store.delete(key);
-    request.onsuccess = () => resolve();
+    request.onsuccess = () => {
+        broadcastChangeEvent(storeName, key);
+        resolve();
+    };
     request.onerror = () => reject(request.error);
   });
 };
@@ -211,7 +231,10 @@ const clearStore = async (storeName: string): Promise<void> => {
     const store = await getStore(storeName, 'readwrite');
     return new Promise((resolve, reject) => {
         const request = store.clear();
-        request.onsuccess = () => resolve();
+        request.onsuccess = () => {
+            broadcastChangeEvent(storeName);
+            resolve();
+        };
         request.onerror = () => reject(request.error);
     });
 };
@@ -220,30 +243,60 @@ const clearStore = async (storeName: string): Promise<void> => {
 // Export specific service functions
 export const initDB = () => openDb();
 
+export const resetDatabase = async (): Promise<void> => {
+  if (dbPromise) {
+    const db = await dbPromise;
+    db.close();
+    dbPromise = null;
+  }
+
+  return new Promise((resolve, reject) => {
+    const deleteRequest = indexedDB.deleteDatabase(DB_NAME);
+    deleteRequest.onsuccess = () => {
+      console.log('Database deleted successfully.');
+      broadcastChangeEvent('database-reset');
+      initDB().then(() => resolve()).catch(reject);
+    };
+    deleteRequest.onerror = (event) => {
+      console.error('Error deleting database:', (event.target as IDBOpenDBRequest).error);
+      reject('Error deleting database.');
+    };
+    deleteRequest.onblocked = () => {
+        console.warn('Database deletion blocked. Please close other tabs with this app open.');
+        reject('Database deletion is blocked. Please close any other open tabs of this application and try again.');
+    };
+  });
+};
+
 // Settings
 export const getSettings = () => get<AppSettings>(STORES.SETTINGS, 'appSettings');
-export const updateSettings = (settings: AppSettings) => put(STORES.SETTINGS, { ...settings, id: 'appSettings' });
+export const updateSettings = (settings: AppSettings) => put(STORES.SETTINGS, { ...settings, id: 'appSettings' }, 'appSettings');
 export const getOperatingExpenses = () => get<{rent: number, insurance: number, utilities: number}>(STORES.SETTINGS, 'operatingExpenses');
-export const updateOperatingExpenses = (expenses: {rent: number, insurance: number, utilities: number}) => put(STORES.SETTINGS, { ...expenses, id: 'operatingExpenses' });
+export const updateOperatingExpenses = (expenses: {rent: number, insurance: number, utilities: number}) => put(STORES.SETTINGS, { ...expenses, id: 'operatingExpenses' }, 'operatingExpenses');
 
 // Menu Items
 export const getAllMenuItems = () => getAll<MenuItem>(STORES.MENU_ITEMS);
 export const addMenuItem = (item: Omit<MenuItem, 'id'|'image'>) => add<MenuItem>(STORES.MENU_ITEMS, {...item, image: `https://picsum.photos/seed/${Date.now()}/200/200`});
-export const updateMenuItem = (item: MenuItem) => put(STORES.MENU_ITEMS, item);
+export const updateMenuItem = (item: MenuItem) => put(STORES.MENU_ITEMS, item, item.id);
 
 // Inventory
 export const getAllInventory = () => getAll<InventoryItem>(STORES.INVENTORY);
-export const updateInventoryItem = (item: InventoryItem) => put(STORES.INVENTORY, item);
+export const updateInventoryItem = (item: InventoryItem) => put(STORES.INVENTORY, item, item.id);
 export const updateInventoryBatch = async (items: InventoryItem[]) => {
     const store = await getStore(STORES.INVENTORY, 'readwrite');
-    items.forEach(item => store.put(item));
-    return Promise.resolve();
+    const promises = items.map(item => new Promise<void>((resolve, reject) => {
+        const request = store.put(item);
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+    }));
+    await Promise.all(promises);
+    broadcastChangeEvent(STORES.INVENTORY, items.map(i => i.id));
 };
 
 // Tables
 export const getAllTables = () => getAll<Table>(STORES.TABLES);
 export const addTable = (table: Omit<Table, 'id'|'status'|'floorPlanId'>, floorPlanId: string) => add<Table>(STORES.TABLES, {...table, status: 'available', floorPlanId, x: 20, y: 20});
-export const updateTable = (table: Table) => put(STORES.TABLES, table);
+export const updateTable = (table: Table) => put(STORES.TABLES, table, table.id);
 export const deleteTable = (tableId: number) => deleteItem(STORES.TABLES, tableId);
 
 // Staff
@@ -251,7 +304,7 @@ export const getAllStaff = () => getAll<StaffMember>(STORES.STAFF);
 
 // Customers
 export const getAllCustomers = () => getAll<Customer>(STORES.CUSTOMERS);
-export const updateCustomer = (customer: Customer) => put(STORES.CUSTOMERS, customer);
+export const updateCustomer = (customer: Customer) => put(STORES.CUSTOMERS, customer, customer.id);
 
 // Reservations
 export const getAllReservations = () => getAll<Reservation>(STORES.RESERVATIONS);
@@ -260,18 +313,18 @@ export const addReservation = (reservation: Omit<Reservation, 'id' | 'status'>) 
 // Shifts
 export const getAllShifts = () => getAll<Shift>(STORES.SHIFTS);
 export const addShift = (shift: Omit<Shift, 'id'>) => add<Shift>(STORES.SHIFTS, shift);
-export const updateShift = (shift: Shift) => put(STORES.SHIFTS, shift);
+export const updateShift = (shift: Shift) => put(STORES.SHIFTS, shift, shift.id);
 export const deleteShift = (shiftId: number) => deleteItem(STORES.SHIFTS, shiftId);
 
 // Staff Availability
 export const getAllStaffAvailability = () => getAll<StaffAvailability>(STORES.STAFF_AVAILABILITY);
-export const putStaffAvailability = (availability: StaffAvailability) => put(STORES.STAFF_AVAILABILITY, availability);
+export const putStaffAvailability = (availability: StaffAvailability) => put(STORES.STAFF_AVAILABILITY, availability, [availability.staffId, availability.day]);
 export const deleteStaffAvailability = (key: [number, Shift['day']]) => deleteItem(STORES.STAFF_AVAILABILITY, key);
 
 // Shift Swap Requests
 export const getAllShiftSwapRequests = () => getAll<ShiftSwapRequest>(STORES.SHIFT_SWAP_REQUESTS);
 export const addShiftSwapRequest = (req: Omit<ShiftSwapRequest, 'id'>) => add<ShiftSwapRequest>(STORES.SHIFT_SWAP_REQUESTS, req);
-export const updateShiftSwapRequest = (req: ShiftSwapRequest) => put(STORES.SHIFT_SWAP_REQUESTS, req);
+export const updateShiftSwapRequest = (req: ShiftSwapRequest) => put(STORES.SHIFT_SWAP_REQUESTS, req, req.id);
 export const deleteShiftSwapRequest = (id: number) => deleteItem(STORES.SHIFT_SWAP_REQUESTS, id);
 
 // Wastage Log
@@ -289,7 +342,10 @@ export const addTimeClockEntry = async (entry: TimeClockEntry): Promise<TimeCloc
     const store = await getStore(STORES.TIME_CLOCK_ENTRIES, 'readwrite');
     return new Promise((resolve, reject) => {
         const request = store.add(entry);
-        request.onsuccess = () => resolve(entry);
+        request.onsuccess = () => {
+            broadcastChangeEvent(STORES.TIME_CLOCK_ENTRIES);
+            resolve(entry);
+        }
         request.onerror = () => reject(request.error);
     });
 };
@@ -297,17 +353,21 @@ export const addTimeClockEntry = async (entry: TimeClockEntry): Promise<TimeCloc
 
 // Orders
 export const getAllTableOrders = () => getAll<{tableId: number, items: OrderItem[]}>(STORES.TABLE_ORDERS);
-export const updateTableOrder = (tableId: number, items: OrderItem[]) => put(STORES.TABLE_ORDERS, { tableId, items });
+export const updateTableOrder = (tableId: number, items: OrderItem[]) => put(STORES.TABLE_ORDERS, { tableId, items }, tableId);
 export const deleteTableOrder = (tableId: number) => deleteItem(STORES.TABLE_ORDERS, tableId);
 
 export const getAllKdsOrders = () => getAll<Order>(STORES.KDS_ORDERS);
 export const addKdsOrder = (order: Omit<Order, 'id'>) => add<Order>(STORES.KDS_ORDERS, order);
-export const updateKdsOrder = (order: Order) => put(STORES.KDS_ORDERS, order);
+export const updateKdsOrder = (order: Order) => put(STORES.KDS_ORDERS, order, order.id);
 export const deleteKdsOrder = (id: number) => deleteItem(STORES.KDS_ORDERS, id);
 export const clearKdsOrdersByTable = async (tableName: string) => {
     const orders = await getAllKdsOrders();
     const store = await getStore(STORES.KDS_ORDERS, 'readwrite');
-    orders.filter(o => o.table === tableName).forEach(o => store.delete(o.id));
+    const toDelete = orders.filter(o => o.table === tableName);
+    if (toDelete.length > 0) {
+        toDelete.forEach(o => store.delete(o.id));
+        broadcastChangeEvent(STORES.KDS_ORDERS);
+    }
 };
 
 
@@ -316,7 +376,62 @@ export const addHeldOrder = (order: Omit<Order, 'id'>) => add<Order>(STORES.HELD
 export const updateHeldOrders = async (orders: Order[]) => {
     await clearStore(STORES.HELD_ORDERS);
     const store = await getStore(STORES.HELD_ORDERS, 'readwrite');
-    orders.forEach(order => store.add(order));
+    if (orders.length > 0) {
+        orders.forEach(order => store.add(order)); // don't need to await each add in this context
+    }
+    broadcastChangeEvent(STORES.HELD_ORDERS);
 };
 
 export const getAllFloorPlanAreas = () => getAll<FloorPlanArea>(STORES.FLOOR_PLAN_AREAS);
+
+// --- DATA EXPORT FUNCTIONS ---
+
+const fetchAllData = async () => {
+    const data: Record<string, any[]> = {};
+    for (const storeName of Object.values(STORES)) {
+        data[storeName] = await getAll(storeName);
+    }
+    return data;
+};
+
+export const exportAllDataAsJson = async (): Promise<string> => {
+    const allData = await fetchAllData();
+    return JSON.stringify(allData, null, 2);
+};
+
+const formatSqlValue = (value: any): string => {
+    if (value === null || typeof value === 'undefined') return 'NULL';
+    if (typeof value === 'number') return String(value);
+    if (typeof value === 'boolean') return value ? 'TRUE' : 'FALSE';
+    if (value instanceof Date) return `'${value.toISOString()}'`;
+    if (typeof value === 'object') return `'${JSON.stringify(value).replace(/'/g, "''")}'`;
+    return `'${String(value).replace(/'/g, "''")}'`;
+};
+
+const generateSqlInserts = (tableName: string, data: any[]): string => {
+    if (data.length === 0) return '';
+
+    let sql = `-- Data for table: ${tableName}\n`;
+    const keys = Object.keys(data[0]).map(key => `"${key}"`).join(', ');
+
+    for (const item of data) {
+        // Ensure all keys are present, defaulting to null if missing
+        const values = Object.keys(data[0]).map(key => formatSqlValue(item[key])).join(', ');
+        sql += `INSERT INTO "${tableName}" (${keys}) VALUES (${values});\n`;
+    }
+
+    return sql + '\n';
+};
+
+export const exportAllDataAsSql = async (): Promise<string> => {
+    const allData = await fetchAllData();
+    let sqlOutput = `--- BarNest Data Export - ${new Date().toISOString()} ---\n\n`;
+
+    for (const storeName of Object.values(STORES)) {
+        if (allData[storeName] && allData[storeName].length > 0) {
+            sqlOutput += generateSqlInserts(storeName, allData[storeName]);
+        }
+    }
+
+    return sqlOutput;
+};

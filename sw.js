@@ -1,4 +1,4 @@
-const CACHE_NAME = 'barnest-cache-v4'; // Bump version to trigger re-install
+const CACHE_NAME = 'barnest-cache-v5'; // Bump version to trigger re-install
 const urlsToCache = [
   '/',
   '/index.html',

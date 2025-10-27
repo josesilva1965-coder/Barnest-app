@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { View, StaffMember } from '../types';
 import { PosIcon, InventoryIcon, TablesIcon, ReportsIcon, StaffIcon, FeedbackIcon, KdsIcon, CalendarIcon, LogoutIcon, SettingsIcon, DownloadIcon } from './icons/Icons';
@@ -10,6 +11,7 @@ interface SidebarProps {
   onLogout: () => void;
   showInstallButton: boolean;
   onInstallClick: () => void;
+  syncIndicator: boolean;
 }
 
 const NavItem: React.FC<{
@@ -32,7 +34,7 @@ const NavItem: React.FC<{
   </button>
 );
 
-const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, currentUser, onLogout, showInstallButton, onInstallClick }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, currentUser, onLogout, showInstallButton, onInstallClick, syncIndicator }) => {
   const allNavItems = [
     { view: View.POS, label: 'POS', icon: <PosIcon className="w-6 h-6" /> },
     { view: View.KDS, label: 'KDS', icon: <KdsIcon className="w-6 h-6" /> },
@@ -50,9 +52,13 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, currentUse
 
   return (
     <aside className="w-20 md:w-56 bg-brand-dark p-2 md:p-4 flex flex-col">
-      <div className="text-white text-2xl font-bold mb-8 text-center">
+      <div className="text-white text-2xl font-bold mb-8 text-center flex items-center justify-center gap-2">
         <span className="md:hidden">BN</span>
         <span className="hidden md:inline">BarNest</span>
+        <div 
+          className={`w-2 h-2 rounded-full bg-green-400 transition-opacity duration-500 ${syncIndicator ? 'opacity-100' : 'opacity-0'}`} 
+          title="Data synced from another tab"
+        ></div>
       </div>
       <nav className="flex-1" role="menu" aria-label="Main Navigation">
         {navItems.map((item) => (

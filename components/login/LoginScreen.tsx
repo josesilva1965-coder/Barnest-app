@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { StaffMember } from '../../types';
 import { STAFF_DATA } from '../../constants';
@@ -20,7 +19,13 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onGoToCustomerReserv
     e.preventDefault();
     setError('');
 
-    if (selectedStaff && selectedStaff.password === password) {
+    if (!selectedStaff) return;
+
+    // NOTE: This is placeholder logic for demonstration.
+    // In a real production app, this must be replaced with a secure backend authentication system.
+    const correctPassword = selectedStaff.role === 'Manager' ? 'admin' : '1234';
+
+    if (password === correctPassword) {
       onLogin(selectedStaff);
     } else {
       setError('Incorrect password. Please try again.');

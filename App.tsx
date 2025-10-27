@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Sidebar from './components/Sidebar';
 import PosScreen from './components/pos/PosScreen';
 import KdsScreen from './components/kds/KdsScreen';
@@ -61,6 +61,7 @@ const App: React.FC = () => {
   const [customerTableId, setCustomerTableId] = useState<number | null>(null);
   const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
   const [installPromptEvent, setInstallPromptEvent] = useState<BeforeInstallPromptEvent | null>(null);
+  const [syncIndicator, setSyncIndicator] = useState(false);
 
   // PWA Install Prompt Effect
   useEffect(() => {
@@ -130,54 +131,73 @@ const App: React.FC = () => {
     });
   };
 
+  const loadData = useCallback(async () => {
+    try {
+      await db.initDB();
+      const [
+        dbMenuItems, dbInventory, dbTables, dbCustomers, dbReservations,
+        dbShifts, dbStaffAvailability, dbShiftSwapRequests, dbWastageLog,
+        dbPurchaseOrders, dbTimeClockEntries, dbSettings, dbOperatingExpenses,
+        dbTableOrders, dbKdsOrders, dbHeldOrders, dbFloorPlanAreas
+      ] = await Promise.all([
+        db.getAllMenuItems(), db.getAllInventory(), db.getAllTables(), db.getAllCustomers(),
+        db.getAllReservations(), db.getAllShifts(), db.getAllStaffAvailability(),
+        db.getAllShiftSwapRequests(), db.getAllWastageLog(), db.getAllPurchaseOrders(),
+        db.getAllTimeClockEntries(), db.getSettings(), db.getOperatingExpenses(),
+        db.getAllTableOrders(), db.getAllKdsOrders(), db.getAllHeldOrders(), db.getAllFloorPlanAreas()
+      ]);
+      
+      setMenuItems(dbMenuItems);
+      setInventory(dbInventory);
+      setTables(dbTables);
+      setCustomers(dbCustomers);
+      setReservations(dbReservations.sort((a, b) => new Date(`${a.date}T${a.time}`).getTime() - new Date(`${b.date}T${b.time}`).getTime()));
+      setShifts(dbShifts);
+      setStaffAvailability(dbStaffAvailability);
+      setShiftSwapRequests(dbShiftSwapRequests);
+      setWastageLog(dbWastageLog.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()));
+      setPurchaseOrders(dbPurchaseOrders.sort((a,b) => b.createdAt.getTime() - a.createdAt.getTime()));
+      setTimeClockEntries(dbTimeClockEntries);
+      if (dbSettings) setSettings(dbSettings);
+      if (dbOperatingExpenses) setOperatingExpenses(dbOperatingExpenses);
+      
+      const tableOrdersRecord = dbTableOrders.reduce((acc, to) => ({ ...acc, [to.tableId]: to.items }), {});
+      setTableOrders(tableOrdersRecord);
+      setKdsOrders(dbKdsOrders);
+      setHeldOrders(dbHeldOrders);
+      setFloorPlanAreas(dbFloorPlanAreas.length > 0 ? dbFloorPlanAreas : initialFloorPlanAreas);
+
+    } catch (e) {
+      console.error("Failed to load data from DB:", e);
+      setError("Could not load application data. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   // Data Loading Effect
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        await db.initDB();
-        const [
-          dbMenuItems, dbInventory, dbTables, dbCustomers, dbReservations,
-          dbShifts, dbStaffAvailability, dbShiftSwapRequests, dbWastageLog,
-          dbPurchaseOrders, dbTimeClockEntries, dbSettings, dbOperatingExpenses,
-          dbTableOrders, dbKdsOrders, dbHeldOrders, dbFloorPlanAreas
-        ] = await Promise.all([
-          db.getAllMenuItems(), db.getAllInventory(), db.getAllTables(), db.getAllCustomers(),
-          db.getAllReservations(), db.getAllShifts(), db.getAllStaffAvailability(),
-          db.getAllShiftSwapRequests(), db.getAllWastageLog(), db.getAllPurchaseOrders(),
-          db.getAllTimeClockEntries(), db.getSettings(), db.getOperatingExpenses(),
-          db.getAllTableOrders(), db.getAllKdsOrders(), db.getAllHeldOrders(), db.getAllFloorPlanAreas()
-        ]);
-        
-        setMenuItems(dbMenuItems);
-        setInventory(dbInventory);
-        setTables(dbTables);
-        setCustomers(dbCustomers);
-        setReservations(dbReservations.sort((a, b) => new Date(`${a.date}T${a.time}`).getTime() - new Date(`${b.date}T${b.time}`).getTime()));
-        setShifts(dbShifts);
-        setStaffAvailability(dbStaffAvailability);
-        setShiftSwapRequests(dbShiftSwapRequests);
-        setWastageLog(dbWastageLog.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()));
-        setPurchaseOrders(dbPurchaseOrders.sort((a,b) => b.createdAt.getTime() - a.createdAt.getTime()));
-        setTimeClockEntries(dbTimeClockEntries);
-        if (dbSettings) setSettings(dbSettings);
-        if (dbOperatingExpenses) setOperatingExpenses(dbOperatingExpenses);
-        
-        const tableOrdersRecord = dbTableOrders.reduce((acc, to) => ({ ...acc, [to.tableId]: to.items }), {});
-        setTableOrders(tableOrdersRecord);
-        setKdsOrders(dbKdsOrders);
-        setHeldOrders(dbHeldOrders);
-        setFloorPlanAreas(dbFloorPlanAreas.length > 0 ? dbFloorPlanAreas : initialFloorPlanAreas);
+    loadData();
+  }, [loadData]);
 
-      } catch (e) {
-        console.error("Failed to load data from DB:", e);
-        setError("Could not load application data. Please try again.");
-      } finally {
-        setIsLoading(false);
-      }
+  // Live Sync Simulation Effect
+  useEffect(() => {
+    const handleStorageChange = (event: StorageEvent) => {
+        if (event.key === 'barnest-db-change' && event.newValue) {
+            console.log('Live Sync: Detected database change from another tab. Reloading data.');
+            setSyncIndicator(true);
+            setTimeout(() => setSyncIndicator(false), 1000); // Visual indicator for 1 second
+            loadData();
+        }
     };
 
-    loadData();
-  }, []);
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+        window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [loadData]);
+
 
   const handleGoToCustomerReservations = () => {
     window.location.hash = '#?view=reserve';
@@ -778,6 +798,7 @@ const App: React.FC = () => {
             tables={tables} onAddMenuItem={handleAddMenuItem} onAddTable={handleAddTable}
             onUpdateMenuItemImage={handleUpdateMenuItemImage} onUpdateTable={handleUpdateTable}
             onDeleteTable={handleDeleteTable} floorPlanAreas={visibleFloorPlanAreas}
+            currentUser={currentUser}
         />;
       default:
         return <FloorPlan 
@@ -796,6 +817,7 @@ const App: React.FC = () => {
         currentUser={currentUser} onLogout={handleLogout}
         showInstallButton={!!installPromptEvent}
         onInstallClick={handleInstallClick}
+        syncIndicator={syncIndicator}
       />
       <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-brand-primary/20">
         {renderView()}

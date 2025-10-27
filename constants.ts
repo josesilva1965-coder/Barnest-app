@@ -196,12 +196,12 @@ export const INITIAL_TABLES_DATA: Table[] = [
 ];
 
 export const STAFF_DATA: StaffMember[] = [
-    { id: 1, name: 'Anna', role: 'Server', password: '1234', hourlyRate: 15.00 },
-    { id: 2, name: 'John', role: 'Server', password: '1234', hourlyRate: 15.50 },
-    { id: 3, name: 'Mike', role: 'Bartender', password: '1234', hourlyRate: 18.00 },
-    { id: 4, name: 'Chloe', role: 'Bartender', password: '1234', hourlyRate: 18.50 },
-    { id: 5, name: 'David', role: 'Manager', password: 'admin', hourlyRate: 25.00 },
-    { id: 6, name: 'Maria', role: 'Kitchen', password: '1234', hourlyRate: 20.00 },
+    { id: 1, name: 'Anna', role: 'Server', hourlyRate: 15.00 },
+    { id: 2, name: 'John', role: 'Server', hourlyRate: 15.50 },
+    { id: 3, name: 'Mike', role: 'Bartender', hourlyRate: 18.00 },
+    { id: 4, name: 'Chloe', role: 'Bartender', hourlyRate: 18.50 },
+    { id: 5, name: 'David', role: 'Manager', hourlyRate: 25.00 },
+    { id: 6, name: 'Maria', role: 'Kitchen', hourlyRate: 20.00 },
 ];
 
 export const STAFF_PERFORMANCE_DATA: StaffPerformanceData[] = [
