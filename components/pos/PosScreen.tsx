@@ -1,5 +1,5 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
-// FIX: Import `View` as a value to use its enum members, and keep other imports as types.
 import { View } from '../../types';
 import type { OrderItem, MenuItem, Modifier, Split, Table, Customer, Reward, StaffMember } from '../../types';
 import Card from '../ui/Card';

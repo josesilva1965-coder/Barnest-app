@@ -1,9 +1,11 @@
+
 import React, { useState } from 'react';
-import { StaffMember } from '../../types';
+import type { StaffMember } from '../../types';
 import { STAFF_DATA } from '../../constants';
 import { UserIcon } from '../icons/Icons';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
+import { useLocalization } from '../../contexts/LocalizationContext';
 
 interface LoginScreenProps {
   onLogin: (staff: StaffMember) => void;
@@ -14,6 +16,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onGoToCustomerReserv
   const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const { t } = useLocalization();
 
   const handleLoginAttempt = (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,7 +31,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onGoToCustomerReserv
     if (password === correctPassword) {
       onLogin(selectedStaff);
     } else {
-      setError('Incorrect password. Please try again.');
+      setError(t('login.incorrectPassword'));
       setPassword('');
     }
   };
@@ -55,23 +58,23 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onGoToCustomerReserv
               
               <form onSubmit={handleLoginAttempt} className="w-full space-y-4">
                 <div>
-                  <label htmlFor="password-input" className="sr-only">Password</label>
+                  <label htmlFor="password-input" className="sr-only">{t('login.password')}</label>
                   <input
                     id="password-input"
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full p-3 rounded bg-brand-primary border border-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-secondary text-center text-lg"
-                    placeholder="Enter Password"
+                    placeholder={t('login.enterPassword')}
                     autoFocus
                     required
                   />
                 </div>
                 {error && <p className="text-red-500 text-sm">{error}</p>}
-                <Button type="submit" variant="primary" className="w-full py-3">Login</Button>
+                <Button type="submit" variant="primary" className="w-full py-3">{t('login.login')}</Button>
               </form>
               <button onClick={handleBack} className="mt-4 text-gray-400 hover:text-white text-sm">
-                Not {selectedStaff.name}? Select a different profile.
+                {t('login.notUser', { name: selectedStaff.name })}
               </button>
             </div>
           </Card>
@@ -83,7 +86,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onGoToCustomerReserv
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-brand-dark p-4">
       <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">Bar<span className="text-brand-secondary">Nest</span></h1>
-      <h2 className="text-xl text-gray-400 mb-12">Select your profile to sign in</h2>
+      <h2 className="text-xl text-gray-400 mb-12">{t('login.selectProfile')}</h2>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
         {STAFF_DATA.map(staff => (
           <Card 
@@ -103,7 +106,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onGoToCustomerReserv
             onClick={onGoToCustomerReservations}
             className="bg-transparent border-none p-0 cursor-pointer text-brand-secondary hover:text-orange-400 font-semibold text-lg"
         >
-            Are you a customer? Make a Reservation
+            {t('login.customerReservation')}
         </button>
     </div>
     </div>

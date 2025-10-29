@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { OrderItem, MenuItem } from '../../types';
+import type { OrderItem, MenuItem } from '../../types';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import { getPairingSuggestions, PairingSuggestion } from '../../services/geminiService';

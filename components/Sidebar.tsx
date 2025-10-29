@@ -3,6 +3,7 @@ import React from 'react';
 import { View, StaffMember } from '../types';
 import { PosIcon, InventoryIcon, TablesIcon, ReportsIcon, StaffIcon, FeedbackIcon, KdsIcon, CalendarIcon, LogoutIcon, SettingsIcon, DownloadIcon } from './icons/Icons';
 import { ROLE_PERMISSIONS } from '../constants';
+import { useLocalization } from '../../contexts/LocalizationContext';
 
 interface SidebarProps {
   activeView: View;
@@ -35,16 +36,18 @@ const NavItem: React.FC<{
 );
 
 const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, currentUser, onLogout, showInstallButton, onInstallClick, syncIndicator }) => {
+  const { t } = useLocalization();
+  
   const allNavItems = [
-    { view: View.POS, label: 'POS', icon: <PosIcon className="w-6 h-6" /> },
-    { view: View.KDS, label: 'KDS', icon: <KdsIcon className="w-6 h-6" /> },
-    { view: View.Inventory, label: 'Inventory', icon: <InventoryIcon className="w-6 h-6" /> },
-    { view: View.Tables, label: 'Tables', icon: <TablesIcon className="w-6 h-6" /> },
-    { view: View.Reservations, label: 'Reservations', icon: <CalendarIcon className="w-6 h-6" /> },
-    { view: View.Reports, label: 'Reports', icon: <ReportsIcon className="w-6 h-6" /> },
-    { view: View.Staff, label: 'Staff', icon: <StaffIcon className="w-6 h-6" /> },
-    { view: View.Feedback, label: 'Feedback', icon: <FeedbackIcon className="w-6 h-6" /> },
-    { view: View.Settings, label: 'Settings', icon: <SettingsIcon className="w-6 h-6" /> },
+    { view: View.POS, label: t('sidebar.pos'), icon: <PosIcon className="w-6 h-6" /> },
+    { view: View.KDS, label: t('sidebar.kds'), icon: <KdsIcon className="w-6 h-6" /> },
+    { view: View.Inventory, label: t('sidebar.inventory'), icon: <InventoryIcon className="w-6 h-6" /> },
+    { view: View.Tables, label: t('sidebar.tables'), icon: <TablesIcon className="w-6 h-6" /> },
+    { view: View.Reservations, label: t('sidebar.reservations'), icon: <CalendarIcon className="w-6 h-6" /> },
+    { view: View.Reports, label: t('sidebar.reports'), icon: <ReportsIcon className="w-6 h-6" /> },
+    { view: View.Staff, label: t('sidebar.staff'), icon: <StaffIcon className="w-6 h-6" /> },
+    { view: View.Feedback, label: t('sidebar.feedback'), icon: <FeedbackIcon className="w-6 h-6" /> },
+    { view: View.Settings, label: t('sidebar.settings'), icon: <SettingsIcon className="w-6 h-6" /> },
   ];
 
   const permittedViews = currentUser ? ROLE_PERMISSIONS[currentUser.role] : [];
@@ -80,7 +83,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, currentUse
             aria-label="Install BarNest App"
           >
             <DownloadIcon className="w-6 h-6" />
-            <span className="mt-1 md:mt-0 md:ml-3 text-sm md:text-base font-medium">Install App</span>
+            <span className="mt-1 md:mt-0 md:ml-3 text-sm md:text-base font-medium">{t('sidebar.install')}</span>
           </button>
         )}
         {currentUser && (
@@ -95,7 +98,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, currentUse
           aria-label="Logout"
         >
           <LogoutIcon className="w-6 h-6" />
-          <span className="mt-1 md:mt-0 md:ml-3 text-sm md:text-base font-medium">Logout</span>
+          <span className="mt-1 md:mt-0 md:ml-3 text-sm md:text-base font-medium">{t('sidebar.logout')}</span>
         </button>
         <div className="text-center text-gray-500 text-xs pt-4 border-t border-brand-primary/20 mt-2">
             <p>Version 1.0.0</p>

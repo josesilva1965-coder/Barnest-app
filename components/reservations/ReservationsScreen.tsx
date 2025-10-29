@@ -1,5 +1,6 @@
+
 import React, { useState, useMemo } from 'react';
-import { Reservation } from '../../types';
+import type { Reservation } from '../../types';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 

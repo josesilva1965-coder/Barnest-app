@@ -1,14 +1,14 @@
 
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
-import { AppSettings, MenuItem, Table, FloorPlanArea, StaffMember } from '../../types';
+import type { AppSettings, MenuItem, Table, FloorPlanArea, StaffMember } from '../../types';
 import AddMenuItemModal from './AddMenuItemModal';
 import AddTableModal from './AddTableModal';
-import { TrashIcon } from '../icons/Icons';
+import { TrashIcon, CheckIcon } from '../icons/Icons';
 import * as db from '../../services/dbService';
-
+import { useLocalization } from '../../contexts/LocalizationContext';
 
 interface SettingsScreenProps {
   settings: AppSettings;
@@ -25,20 +25,33 @@ interface SettingsScreenProps {
 }
 
 const SettingsScreen: React.FC<SettingsScreenProps> = ({ settings, onUpdateSettings, menuItems, tables, onAddMenuItem, onAddTable, onUpdateMenuItemImage, onUpdateTable, onDeleteTable, floorPlanAreas, currentUser }) => {
+  const { t } = useLocalization();
+  const [localSettings, setLocalSettings] = useState(settings);
   const [isAddMenuItemModalOpen, setIsAddMenuItemModalOpen] = useState(false);
   const [isAddTableModalOpen, setIsAddTableModalOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  
-  const handleTaxRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    // Allow empty input for user-friendliness, but don't update state with NaN
-    onUpdateSettings({ taxRate: value === '' ? 0 : parseFloat(value) });
-  };
-  
-  const handleThemeChange = (theme: AppSettings['theme']) => {
-      onUpdateSettings({ theme });
-  };
+  const [isSaved, setIsSaved] = useState(true);
 
+  useEffect(() => {
+    setLocalSettings(settings);
+    setIsSaved(true);
+  }, [settings]);
+
+  const handleSettingsChange = (newSettings: Partial<AppSettings>) => {
+    setLocalSettings(prev => ({...prev, ...newSettings}));
+    setIsSaved(false);
+  }
+
+  const handleSaveChanges = () => {
+    onUpdateSettings(localSettings);
+    setIsSaved(true);
+  }
+
+  const handleCancelChanges = () => {
+    setLocalSettings(settings);
+    setIsSaved(true);
+  }
+  
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, itemId: number) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -53,15 +66,15 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ settings, onUpdateSetti
   };
 
   const handleResetDatabase = async () => {
-    const isConfirmed = window.confirm("Are you sure? This will delete ALL current orders, inventory counts, and settings, and restore the application to its initial demo state. This action cannot be undone.");
+    const isConfirmed = window.confirm(t('settings.resetWarning'));
     if (isConfirmed) {
         try {
             await db.resetDatabase();
-            alert("Database has been reset. The application will now reload.");
+            alert(t('settings.resetSuccess'));
             window.location.reload();
         } catch (error) {
             console.error("Failed to reset database:", error);
-            alert("An error occurred while resetting the database. Please check the console for details.");
+            alert(t('settings.resetError'));
         }
     }
   };
@@ -100,19 +113,18 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ settings, onUpdateSetti
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold text-white">Application Settings</h1>
+      <h1 className="text-3xl font-bold text-white">{t('settings.title')}</h1>
       
-      <Card title="General Configuration">
+      <Card title={t('settings.general.title')}>
         <div className="space-y-4">
-          {/* Tax Rate Setting */}
           <div>
-            <label htmlFor="tax-rate" className="block text-lg font-medium text-brand-accent mb-1">Sales Tax Rate</label>
+            <label htmlFor="tax-rate" className="block text-lg font-medium text-brand-accent mb-1">{t('settings.general.taxRateLabel')}</label>
             <div className="flex items-center max-w-xs">
                 <input
                     type="number"
                     id="tax-rate"
-                    value={settings.taxRate}
-                    onChange={handleTaxRateChange}
+                    value={localSettings.taxRate}
+                    onChange={(e) => handleSettingsChange({ taxRate: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
                     className="w-full p-2 rounded-l bg-brand-primary border border-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-secondary"
                     step="0.01"
                     min="0"
@@ -121,91 +133,84 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ settings, onUpdateSetti
                     %
                 </span>
             </div>
-            <p className="text-sm text-gray-400 mt-2">This rate will be applied to all checks at the point of sale.</p>
+            <p className="text-sm text-gray-400 mt-2">{t('settings.general.taxRateDescription')}</p>
           </div>
         </div>
       </Card>
-      
-      <Card title="Live Sync Simulation">
-        <div className="p-4 bg-blue-900/30 border border-blue-500/50 rounded-lg space-y-3 text-sm text-blue-200">
-            <h3 className="font-bold text-blue-100 text-lg">Demonstrating Real-Time Collaboration</h3>
-            <p>
-                This application uses a powerful browser-based database (IndexedDB), which makes it incredibly fast and enables full offline functionality. However, this data is normally isolated to a single browser.
-            </p>
-            <p>
-                To demonstrate how a real restaurant team would work together, we've enabled a <strong>Live Sync Simulation</strong>. When you open this app in two separate browser tabs and make a change in one (like taking an order or updating a table's status), you will see the change reflect in the other tab instantly.
-            </p>
-             <p>
-                A small green dot will flash in the sidebar to indicate when a sync has occurred. This simulates the experience of a fully centralized, cloud-based database required for a live production environment.
-            </p>
-        </div>
-      </Card>
 
-      <Card title="Appearance & Language">
+      <Card title={t('settings.appearance.title')}>
         <div className="space-y-6">
-            {/* Theme Selection */}
             <div>
-                <h3 className="text-lg font-medium text-brand-accent mb-2">Theme</h3>
+                <h3 className="text-lg font-medium text-brand-accent mb-2">{t('settings.appearance.themeLabel')}</h3>
                 <div className="flex gap-4">
                     <Button
-                        variant={settings.theme === 'dark' ? 'primary' : 'secondary'}
-                        onClick={() => handleThemeChange('dark')}
+                        variant={localSettings.theme === 'dark' ? 'primary' : 'secondary'}
+                        onClick={() => handleSettingsChange({ theme: 'dark' })}
                     >
-                        Dark
+                        {t('settings.appearance.dark')}
                     </Button>
                     <Button
-                        variant={settings.theme === 'light' ? 'primary' : 'secondary'}
-                        onClick={() => handleThemeChange('light')}
+                        variant={localSettings.theme === 'light' ? 'primary' : 'secondary'}
+                        onClick={() => handleSettingsChange({ theme: 'light' })}
                     >
-                        Light
+                        {t('settings.appearance.light')}
                     </Button>
                 </div>
-                 <p className="text-sm text-gray-400 mt-2">Change the color scheme of the application.</p>
+                 <p className="text-sm text-gray-400 mt-2">{t('settings.appearance.themeDescription')}</p>
             </div>
             
-            {/* Language Selection */}
             <div>
-                 <label htmlFor="language-select" className="block text-lg font-medium text-brand-accent mb-1">Language</label>
+                 <label htmlFor="language-select" className="block text-lg font-medium text-brand-accent mb-1">{t('settings.appearance.languageLabel')}</label>
                 <div className="max-w-xs">
                     <select 
                         id="language-select"
-                        value={settings.language}
-                        onChange={(e) => onUpdateSettings({ language: e.target.value as AppSettings['language'] })}
+                        value={localSettings.language}
+                        onChange={(e) => handleSettingsChange({ language: e.target.value as AppSettings['language'] })}
                         className="w-full p-2 rounded bg-brand-primary border border-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-secondary"
                     >
                         <option value="en">English</option>
-                        <option value="es">Español (Spanish)</option>
+                        <option value="es">Español</option>
+                        <option value="fr">Français</option>
+                        <option value="pt">Português</option>
                     </select>
                 </div>
-                <p className="text-sm text-gray-400 mt-2">Select the display language for the interface (full translation coming soon).</p>
+                <p className="text-sm text-gray-400 mt-2">{t('settings.appearance.languageDescription')}</p>
+            </div>
+             <div className="border-t border-brand-primary pt-4 flex items-center gap-4">
+                <Button onClick={handleSaveChanges} disabled={isSaved}>
+                    {isSaved ? <span className="flex items-center gap-2"><CheckIcon className="w-5 h-5"/> {t('settings.saved')}</span> : t('settings.saveChanges')}
+                </Button>
+                {!isSaved && (
+                    <Button variant="secondary" onClick={handleCancelChanges}>
+                        {t('settings.cancel')}
+                    </Button>
+                )}
             </div>
         </div>
       </Card>
-
-      <Card title="Public URL / QR Code Settings">
+      
+      <Card title={t('settings.url.title')}>
         <div className="space-y-4">
           <div>
-            <label htmlFor="base-url" className="block text-lg font-medium text-brand-accent mb-1">Base URL</label>
+            <label htmlFor="base-url" className="block text-lg font-medium text-brand-accent mb-1">{t('settings.url.label')}</label>
             <input
               type="text"
               id="base-url"
-              value={settings.baseUrl || ''}
-              onChange={(e) => onUpdateSettings({ baseUrl: e.target.value })}
+              value={localSettings.baseUrl || ''}
+              onChange={(e) => handleSettingsChange({ baseUrl: e.target.value })}
               className="w-full p-2 rounded bg-brand-primary border border-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-secondary"
               placeholder="https://your-restaurant-url.com"
             />
              <div className="mt-2 p-3 bg-blue-500/10 text-blue-300 text-sm rounded-lg border border-blue-500/30">
-                <p><strong>This is a critical setting for customer-facing features.</strong></p>
-                <p className="mt-1">
-                  After deploying your application to a public web address (e.g., <code>https://my-barnest-app.com</code>), you must enter that full address here. This ensures that the QR codes generated for table ordering point to the correct, live application.
-                </p>
-                <p className="mt-1">Please do not include a trailing slash (e.g., <code>/</code>) at the end of the URL.</p>
+                <p><strong>{t('settings.url.warningTitle')}</strong></p>
+                <p className="mt-1" dangerouslySetInnerHTML={{ __html: t('settings.url.warningDescription1') }} />
+                <p className="mt-1">{t('settings.url.warningDescription2')}</p>
             </div>
           </div>
         </div>
       </Card>
 
-      <Card title="Menu Management" titleExtra={<Button onClick={() => setIsAddMenuItemModalOpen(true)}>Add Menu Item</Button>}>
+      <Card title={t('settings.menu.title')} titleExtra={<Button onClick={() => setIsAddMenuItemModalOpen(true)}>{t('settings.menu.addItem')}</Button>}>
         <div className="space-y-2 max-h-72 overflow-y-auto pr-2">
             {menuItems.map(item => (
                 <div key={item.id} className="flex justify-between items-center p-2 bg-brand-primary/50 rounded">
@@ -213,7 +218,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ settings, onUpdateSetti
                         <div className="relative group shrink-0">
                             <img src={item.image} alt={item.name} className="w-12 h-12 object-cover rounded"/>
                             <label className="absolute inset-0 bg-black/60 flex items-center justify-center text-xs font-semibold text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer rounded">
-                                Change
+                                {t('settings.menu.changeImage')}
                                 <input 
                                     type="file" 
                                     accept="image/*" 
@@ -230,7 +235,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ settings, onUpdateSetti
         </div>
       </Card>
 
-      <Card title="Table Management" titleExtra={<Button onClick={() => setIsAddTableModalOpen(true)}>Add Table</Button>}>
+      <Card title={t('settings.tables.title')} titleExtra={<Button onClick={() => setIsAddTableModalOpen(true)}>{t('settings.tables.addTable')}</Button>}>
         <div className="space-y-2 max-h-72 overflow-y-auto pr-2">
           {tables.map(table => (
               <div key={table.id} className="flex justify-between items-center p-2 bg-brand-primary/50 rounded">
@@ -249,15 +254,15 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ settings, onUpdateSetti
                           min="1"
                           aria-label={`Seats for table ${table.name}`}
                       />
-                      <span className="text-gray-400 text-sm">seats</span>
+                      <span className="text-gray-400 text-sm">{t('settings.tables.seats')}</span>
                       <button
                           onClick={() => {
-                              if (window.confirm(`Are you sure you want to delete table ${table.name}? This cannot be undone.`)) {
+                              if (window.confirm(t('settings.tables.deleteConfirm', {tableName: table.name}))) {
                                   onDeleteTable(table.id);
                               }
                           }}
                           disabled={table.status !== 'available'}
-                          title={table.status !== 'available' ? 'Cannot delete an occupied or reserved table' : 'Delete table'}
+                          title={table.status !== 'available' ? t('settings.tables.deleteDisabled') : t('settings.tables.delete')}
                           className="p-1 text-red-500 hover:text-red-400 disabled:text-gray-600 disabled:cursor-not-allowed transition-colors"
                       >
                           <TrashIcon className="w-5 h-5" />
@@ -269,36 +274,31 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ settings, onUpdateSetti
       </Card>
       
       {currentUser?.role === 'Manager' && (
-        <Card title="Data Management">
+        <Card title={t('settings.data.title')}>
             <div className="space-y-6">
                 <div className="p-4 bg-purple-900/30 border border-purple-500/50 rounded-lg">
-                    <h3 className="font-bold text-purple-300 text-lg">Export & Backup</h3>
-                    <p className="text-sm text-purple-200 mt-1 mb-4">
-                        Download a complete copy of all your application data. This is useful for creating backups or migrating to a different system. The SQL file can be used to seed a new production database.
-                    </p>
+                    <h3 className="font-bold text-purple-300 text-lg">{t('settings.data.exportTitle')}</h3>
+                    <p className="text-sm text-purple-200 mt-1 mb-4">{t('settings.data.exportDescription')}</p>
                     <div className="flex gap-4">
                         <Button onClick={() => handleExport('json')} disabled={isExporting}>
-                            {isExporting ? 'Exporting...' : 'Export to JSON'}
+                            {isExporting ? t('settings.data.exporting') : t('settings.data.exportJson')}
                         </Button>
                         <Button onClick={() => handleExport('sql')} disabled={isExporting}>
-                            {isExporting ? 'Exporting...' : 'Export to SQL'}
+                            {isExporting ? t('settings.data.exporting') : t('settings.data.exportSql')}
                         </Button>
                     </div>
                 </div>
 
                 <div className="p-4 bg-red-900/30 border border-red-500/50 rounded-lg">
-                    <h3 className="font-bold text-red-300 text-lg">Reset Application Data</h3>
-                    <p className="text-sm text-red-200 mt-1 mb-4">
-                        This will permanently delete all current data including sales, inventory, and customizations, and restore the application to its original demonstration state. This is useful for training or starting fresh.
-                    </p>
+                    <h3 className="font-bold text-red-300 text-lg">{t('settings.data.resetTitle')}</h3>
+                    <p className="text-sm text-red-200 mt-1 mb-4">{t('settings.data.resetDescription')}</p>
                     <Button variant="danger" onClick={handleResetDatabase}>
-                        Reset and Re-seed Database
+                        {t('settings.data.resetButton')}
                     </Button>
                 </div>
             </div>
         </Card>
       )}
-
 
       {isAddMenuItemModalOpen && (
           <AddMenuItemModal

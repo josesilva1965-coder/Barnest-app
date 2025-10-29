@@ -1,6 +1,7 @@
 
+
 import React, { useState, useMemo, useEffect } from 'react';
-import { Table, MenuItem, OrderItem, Modifier } from '../../types';
+import type { Table, MenuItem, OrderItem, Modifier } from '../../types';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import { ShoppingCartIcon, PlusIcon, MinusIcon, CheckIcon } from '../icons/Icons';

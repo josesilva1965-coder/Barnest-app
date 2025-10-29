@@ -1,5 +1,6 @@
+
 // New file: services/dbService.ts
-import {
+import type {
   InventoryItem,
   MenuItem,
   Table,

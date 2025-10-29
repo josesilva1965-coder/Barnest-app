@@ -155,7 +155,7 @@ export interface StaffAvailability {
 
 export interface AppSettings {
   taxRate: number; // Stored as a percentage, e.g., 8 for 8%
-  language: 'en' | 'es';
+  language: 'en' | 'es' | 'fr' | 'pt';
   theme: 'dark' | 'light';
   baseUrl?: string;
 }

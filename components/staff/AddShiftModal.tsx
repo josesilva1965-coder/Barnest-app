@@ -1,7 +1,8 @@
+
 import React, { useState } from 'react';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
-import { StaffMember, Shift } from '../../types';
+import type { StaffMember, Shift } from '../../types';
 
 interface AddShiftModalProps {
     isOpen: boolean;

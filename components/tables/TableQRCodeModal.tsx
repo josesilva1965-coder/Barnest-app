@@ -1,8 +1,9 @@
 
+
 import React, { useState } from 'react';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
-import { Table, AppSettings } from '../../types';
+import type { Table, AppSettings } from '../../types';
 import { ClipboardIcon, CheckIcon } from '../icons/Icons';
 
 interface TableQRCodeModalProps {

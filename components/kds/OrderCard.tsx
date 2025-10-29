@@ -1,5 +1,7 @@
+
 import React, { useState, useEffect, useRef } from 'react';
-import { Order, OrderStatus } from '../../types';
+import { OrderStatus } from '../../types';
+import type { Order } from '../../types';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 
@@ -36,7 +38,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdateStatus, alertThres
     // Memoize the audio objects to avoid creating them on every render
     if (!alertSoundRef.current) {
         // A simple, short beep sound for late alerts
-        alertSoundRef.current = new Audio('data:audio/wav;base64,UklGRkIAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAAAA//8/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8A==');
+        alertSoundRef.current = new Audio('data:audio/wav;base64,UklGRkIAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAAAA//8/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8D/wP/A/8A==');
     }
     if (!readySoundRef.current) {
         // A more pleasant chime for when an order is ready

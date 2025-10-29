@@ -1,9 +1,10 @@
+
 import React, { useMemo } from 'react';
 import Card from '../ui/Card';
 import { DAILY_SALES, TOP_SELLING_ITEMS, INVENTORY_DATA, SALES_DATA, STAFF_DATA, SHIFTS_DATA } from '../../constants';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid, AreaChart, Area } from 'recharts';
 import MenuEngineeringMatrix from './MenuEngineeringMatrix';
-import { MenuItem } from '../../types';
+import type { MenuItem } from '../../types';
 import PandLStatement from './PandLStatement';
 
 interface ReportsDashboardProps {

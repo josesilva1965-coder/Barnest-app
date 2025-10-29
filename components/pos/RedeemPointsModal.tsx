@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { Customer, Reward } from '../../types';
+import type { Customer, Reward } from '../../types';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import { StarIcon } from '../icons/Icons';

@@ -4,7 +4,8 @@ import Sidebar from './components/Sidebar';
 import PosScreen from './components/pos/PosScreen';
 import KdsScreen from './components/kds/KdsScreen';
 import InventoryDashboard from './components/inventory/InventoryDashboard';
-import FloorPlan from './components/tables/FloorPlan';
+// FIX: Changed import to be a named import as the error indicates FloorPlan is not a default export.
+import { FloorPlan } from './components/tables/FloorPlan';
 import ReportsDashboard from './components/reports/ReportsDashboard';
 import StaffSchedule from './components/staff/StaffSchedule';
 import FeedbackAnalysis from './components/feedback/FeedbackAnalysis';
@@ -13,9 +14,11 @@ import LoginScreen from './components/login/LoginScreen';
 import SettingsScreen from './components/settings/SettingsScreen';
 import CustomerOrderScreen from './components/customer/CustomerOrderScreen';
 import CustomerReservationScreen from './components/reservations/CustomerReservationScreen';
-import { View, InventoryItem, OrderItem, WastageLog, Order, OrderStatus, Table, Customer, Reservation, StaffMember, Shift, ShiftSwapRequest, StaffAvailability, AppSettings, PurchaseOrder, MenuItem, TimeClockEntry, FloorPlanArea, Modifier } from './types';
+import { View, OrderStatus } from './types';
+import type { InventoryItem, OrderItem, WastageLog, Order, Table, Customer, Reservation, StaffMember, Shift, ShiftSwapRequest, StaffAvailability, AppSettings, PurchaseOrder, MenuItem, TimeClockEntry, FloorPlanArea, Modifier } from './types';
 import { ROLE_PERMISSIONS, STAFF_DATA, FLOOR_PLAN_AREAS as initialFloorPlanAreas } from './constants';
 import * as db from './services/dbService';
+import { LocalizationProvider } from './contexts/LocalizationContext';
 
 // Define the type for the BeforeInstallPromptEvent as it's not standard in TypeScript
 interface BeforeInstallPromptEvent extends Event {
@@ -724,106 +727,114 @@ const App: React.FC = () => {
     return <div className="flex items-center justify-center h-screen bg-brand-dark text-red-500 text-2xl">{error}</div>;
   }
 
-  // Customer-facing view routing
-  if (customerView === 'ordering' && customerTableId) {
-    const table = tables.find(t => t.id === customerTableId);
-    const currentOrder = tableOrders[customerTableId] || [];
-    if (table) return <CustomerOrderScreen 
-      table={table} 
-      menuItems={menuItems} 
-      onSendOrder={(newItems) => handleCustomerOrder(table.id, newItems)}
-      currentOrder={currentOrder}
-    />;
-    else return <div className="flex items-center justify-center h-screen bg-brand-dark text-white">Table not found.</div>;
-  }
-  if (customerView === 'booking') {
-      return <CustomerReservationScreen onAddReservation={handleAddReservation} onGoHome={handleGoHome} />;
-  }
-
-  // Staff-facing view routing
-  if (!currentUser) {
-      return <LoginScreen onLogin={handleLogin} onGoToCustomerReservations={handleGoToCustomerReservations} />;
-  }
-
-  const visibleFloorPlanAreas = currentUser?.role === 'Bartender'
-    ? floorPlanAreas.filter(area => area.id === 'bar')
-    : floorPlanAreas;
-
-  const renderView = () => {
-    switch (activeView) {
-      case View.POS:
-        return <PosScreen 
-          selectedTable={selectedTable} selectedCustomer={selectedCustomer}
-          tableOrder={tableOrders[selectedTable?.id ?? -1] || []}
-          onSendOrder={handleSendOrder} onProcessPayment={depleteFromInventory}
-          onCloseTable={handleCloseTable} taxRate={settings.taxRate}
-          menuItems={menuItems} onRedeemPoints={handleRedeemPoints}
-          currentUser={currentUser} setActiveView={setActiveView}
-        />;
-      case View.KDS:
-        return <KdsScreen 
-            orders={kdsOrders} onUpdateStatus={updateOrderStatus} 
-            heldOrdersCount={{ kitchen: heldOrders.filter(o => o.station === 'Kitchen').length, bar: heldOrders.filter(o => o.station === 'Bar').length }}
-            throttlingConfig={throttlingConfig} onThrottlingChange={handleThrottlingChange}
-        />;
-      case View.Inventory:
-        return <InventoryDashboard 
-            inventory={inventory} onLogWastage={handleLogWastage} wastageLog={wastageLog}
-            purchaseOrders={purchaseOrders} onCreatePurchaseOrder={handleCreatePurchaseOrder} onReceivePurchaseOrder={handleReceivePurchaseOrder}
-        />;
-      case View.Tables:
-        return <FloorPlan 
-            tables={tables} onTableSelect={handleTableSelect} readyTables={readyTables}
-            currentUser={currentUser!} onUpdateTable={handleUpdateTable} staffMembers={STAFF_DATA}
-            onAssignServer={handleAssignServer} tableOrders={tableOrders} floorPlanAreas={visibleFloorPlanAreas}
-            settings={settings}
-        />;
-      case View.Reservations:
-        return <ReservationsScreen reservations={reservations} onAddReservation={handleAddReservation} />;
-      case View.Reports:
-        return <ReportsDashboard menuItems={menuItems} operatingExpenses={operatingExpenses} onUpdateOperatingExpenses={handleUpdateOperatingExpenses} />;
-      case View.Staff:
-        return <StaffSchedule 
-          shifts={shifts} 
-          swapRequests={shiftSwapRequests}
-          staffAvailability={staffAvailability}
-          onShiftAction={handleShiftAction} onUpdateShift={handleUpdateShift} onAddShift={handleAddShift}
-          onDeleteShift={handleDeleteShift} onSetAvailability={handleSetAvailability} currentUser={currentUser!}
-          timeClockEntries={timeClockEntries} onClockIn={handleClockIn} onClockOut={handleClockOut}
-        />;
-      case View.Feedback: return <FeedbackAnalysis />;
-      case View.Settings:
-        return <SettingsScreen 
-            settings={settings} onUpdateSettings={handleUpdateSettings} menuItems={menuItems}
-            tables={tables} onAddMenuItem={handleAddMenuItem} onAddTable={handleAddTable}
-            onUpdateMenuItemImage={handleUpdateMenuItemImage} onUpdateTable={handleUpdateTable}
-            onDeleteTable={handleDeleteTable} floorPlanAreas={visibleFloorPlanAreas}
-            currentUser={currentUser}
-        />;
-      default:
-        return <FloorPlan 
-            tables={tables} onTableSelect={handleTableSelect} readyTables={readyTables}
-            currentUser={currentUser!} onUpdateTable={handleUpdateTable} staffMembers={STAFF_DATA}
-            onAssignServer={handleAssignServer} tableOrders={tableOrders} floorPlanAreas={visibleFloorPlanAreas}
-            settings={settings}
-        />;
+  const AppContent = () => {
+    // Customer-facing view routing
+    if (customerView === 'ordering' && customerTableId) {
+      const table = tables.find(t => t.id === customerTableId);
+      const currentOrder = tableOrders[customerTableId] || [];
+      if (table) return <CustomerOrderScreen 
+        table={table} 
+        menuItems={menuItems} 
+        onSendOrder={(newItems) => handleCustomerOrder(table.id, newItems)}
+        currentOrder={currentOrder}
+      />;
+      else return <div className="flex items-center justify-center h-screen bg-brand-dark text-white">Table not found.</div>;
     }
-  };
+    if (customerView === 'booking') {
+        return <CustomerReservationScreen onAddReservation={handleAddReservation} onGoHome={handleGoHome} />;
+    }
+
+    // Staff-facing view routing
+    if (!currentUser) {
+        return <LoginScreen onLogin={handleLogin} onGoToCustomerReservations={handleGoToCustomerReservations} />;
+    }
+
+    const visibleFloorPlanAreas = currentUser?.role === 'Bartender'
+      ? floorPlanAreas.filter(area => area.id === 'bar')
+      : floorPlanAreas;
+
+    const renderView = () => {
+      switch (activeView) {
+        case View.POS:
+          return <PosScreen 
+            selectedTable={selectedTable} selectedCustomer={selectedCustomer}
+            tableOrder={tableOrders[selectedTable?.id ?? -1] || []}
+            onSendOrder={handleSendOrder} onProcessPayment={depleteFromInventory}
+            onCloseTable={handleCloseTable} taxRate={settings.taxRate}
+            menuItems={menuItems} onRedeemPoints={handleRedeemPoints}
+            currentUser={currentUser} setActiveView={setActiveView}
+          />;
+        case View.KDS:
+          return <KdsScreen 
+              orders={kdsOrders} onUpdateStatus={updateOrderStatus} 
+              heldOrdersCount={{ kitchen: heldOrders.filter(o => o.station === 'Kitchen').length, bar: heldOrders.filter(o => o.station === 'Bar').length }}
+              throttlingConfig={throttlingConfig} onThrottlingChange={handleThrottlingChange}
+          />;
+        case View.Inventory:
+          return <InventoryDashboard 
+              inventory={inventory} onLogWastage={handleLogWastage} wastageLog={wastageLog}
+              purchaseOrders={purchaseOrders} onCreatePurchaseOrder={handleCreatePurchaseOrder} onReceivePurchaseOrder={handleReceivePurchaseOrder}
+          />;
+        case View.Tables:
+          return <FloorPlan 
+              tables={tables} onTableSelect={handleTableSelect} readyTables={readyTables}
+              currentUser={currentUser!} onUpdateTable={handleUpdateTable} staffMembers={STAFF_DATA}
+              onAssignServer={handleAssignServer} tableOrders={tableOrders} floorPlanAreas={visibleFloorPlanAreas}
+              settings={settings}
+          />;
+        case View.Reservations:
+          return <ReservationsScreen reservations={reservations} onAddReservation={handleAddReservation} />;
+        case View.Reports:
+          return <ReportsDashboard menuItems={menuItems} operatingExpenses={operatingExpenses} onUpdateOperatingExpenses={handleUpdateOperatingExpenses} />;
+        case View.Staff:
+          return <StaffSchedule 
+            shifts={shifts} 
+            swapRequests={shiftSwapRequests}
+            staffAvailability={staffAvailability}
+            onShiftAction={handleShiftAction} onUpdateShift={handleUpdateShift} onAddShift={handleAddShift}
+            onDeleteShift={handleDeleteShift} onSetAvailability={handleSetAvailability} currentUser={currentUser!}
+            timeClockEntries={timeClockEntries} onClockIn={handleClockIn} onClockOut={handleClockOut}
+          />;
+        case View.Feedback: return <FeedbackAnalysis />;
+        case View.Settings:
+          return <SettingsScreen 
+              settings={settings} onUpdateSettings={handleUpdateSettings} menuItems={menuItems}
+              tables={tables} onAddMenuItem={handleAddMenuItem} onAddTable={handleAddTable}
+              onUpdateMenuItemImage={handleUpdateMenuItemImage} onUpdateTable={handleUpdateTable}
+              onDeleteTable={handleDeleteTable} floorPlanAreas={visibleFloorPlanAreas}
+              currentUser={currentUser}
+          />;
+        default:
+          return <FloorPlan 
+              tables={tables} onTableSelect={handleTableSelect} readyTables={readyTables}
+              currentUser={currentUser!} onUpdateTable={handleUpdateTable} staffMembers={STAFF_DATA}
+              onAssignServer={handleAssignServer} tableOrders={tableOrders} floorPlanAreas={visibleFloorPlanAreas}
+              settings={settings}
+          />;
+      }
+    };
+
+    return (
+      <div className="flex h-screen bg-brand-dark font-sans">
+        <Sidebar 
+          activeView={activeView} setActiveView={setActiveView} 
+          currentUser={currentUser} onLogout={handleLogout}
+          showInstallButton={!!installPromptEvent}
+          onInstallClick={handleInstallClick}
+          syncIndicator={syncIndicator}
+        />
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-brand-primary/20">
+          {renderView()}
+        </main>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex h-screen bg-brand-dark font-sans">
-      <Sidebar 
-        activeView={activeView} setActiveView={setActiveView} 
-        currentUser={currentUser} onLogout={handleLogout}
-        showInstallButton={!!installPromptEvent}
-        onInstallClick={handleInstallClick}
-        syncIndicator={syncIndicator}
-      />
-      <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-brand-primary/20">
-        {renderView()}
-      </main>
-    </div>
-  );
+    <LocalizationProvider language={settings.language}>
+      <AppContent />
+    </LocalizationProvider>
+  )
 };
 
 export default App;

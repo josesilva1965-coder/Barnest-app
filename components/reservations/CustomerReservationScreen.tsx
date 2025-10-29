@@ -1,6 +1,7 @@
 
+
 import React, { useState } from 'react';
-import { Reservation } from '../../types';
+import type { Reservation } from '../../types';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import { CheckIcon } from '../icons/Icons';

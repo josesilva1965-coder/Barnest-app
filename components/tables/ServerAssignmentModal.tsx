@@ -1,6 +1,7 @@
 
+
 import React, { useState } from 'react';
-import { Table, StaffMember, OrderItem } from '../../types';
+import type { Table, StaffMember, OrderItem } from '../../types';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import { PosIcon, QrCodeIcon } from '../icons/Icons';

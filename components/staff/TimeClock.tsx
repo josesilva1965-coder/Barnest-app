@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { StaffMember, TimeClockEntry } from '../../types';
+import type { StaffMember, TimeClockEntry } from '../../types';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 
