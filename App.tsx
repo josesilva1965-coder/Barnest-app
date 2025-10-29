@@ -65,9 +65,13 @@ const App: React.FC = () => {
   const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
   const [installPromptEvent, setInstallPromptEvent] = useState<BeforeInstallPromptEvent | null>(null);
   const [syncIndicator, setSyncIndicator] = useState(false);
+  const [backendMessage, setBackendMessage] = useState('');
 
   // PWA Install Prompt Effect
   useEffect(() => {
+    fetch('/api/hello')
+      .then(res => res.json())
+      .then(data => setBackendMessage(data.message));
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setInstallPromptEvent(e as BeforeInstallPromptEvent);
@@ -746,7 +750,7 @@ const App: React.FC = () => {
 
     // Staff-facing view routing
     if (!currentUser) {
-        return <LoginScreen onLogin={handleLogin} onGoToCustomerReservations={handleGoToCustomerReservations} />;
+        return <LoginScreen onLogin={handleLogin} onGoToCustomerReservations={handleGoToCustomerReservations} backendMessage={backendMessage} />;
     }
 
     const visibleFloorPlanAreas = currentUser?.role === 'Bartender'

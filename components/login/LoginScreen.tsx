@@ -10,9 +10,10 @@ import { useLocalization } from '../../contexts/LocalizationContext';
 interface LoginScreenProps {
   onLogin: (staff: StaffMember) => void;
   onGoToCustomerReservations: () => void;
+  backendMessage: string;
 }
 
-const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onGoToCustomerReservations }) => {
+const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onGoToCustomerReservations, backendMessage }) => {
   const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -109,6 +110,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onGoToCustomerReserv
             {t('login.customerReservation')}
         </button>
     </div>
+      <p className="text-white mt-8">{backendMessage}</p>
     </div>
   );
 };
