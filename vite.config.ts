@@ -15,6 +15,9 @@ export default defineConfig({
             changeOrigin: true,
           },
         },
+        headers: {
+          'Content-Security-Policy': "default-src 'self'; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+        },
       },
       plugins: [react()],
       resolve: {
