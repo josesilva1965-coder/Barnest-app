@@ -65,13 +65,9 @@ const App: React.FC = () => {
   const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
   const [installPromptEvent, setInstallPromptEvent] = useState<BeforeInstallPromptEvent | null>(null);
   const [syncIndicator, setSyncIndicator] = useState(false);
-  const [backendMessage, setBackendMessage] = useState('');
 
   // PWA Install Prompt Effect
   useEffect(() => {
-    fetch('/api/hello')
-      .then(res => res.json())
-      .then(data => setBackendMessage(data.message));
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setInstallPromptEvent(e as BeforeInstallPromptEvent);
@@ -158,7 +154,7 @@ const App: React.FC = () => {
       setInventory(dbInventory);
       setTables(dbTables);
       setCustomers(dbCustomers);
-      setReservations(dbReservations.sort((a, b) => new Date(`${a.date}T${a.time}`).getTime() - new Date(`${b.date}T${b.time}`).getTime()));
+      setReservations(dbReservations.sort((a, b) => new Date(a.date + 'T' + a.time).getTime() - new Date(b.date + 'T' + b.time).getTime()));
       setShifts(dbShifts);
       setStaffAvailability(dbStaffAvailability);
       setShiftSwapRequests(dbShiftSwapRequests);
@@ -253,7 +249,7 @@ const App: React.FC = () => {
       if (permittedViews.includes(view)) {
         _setActiveView(view);
       } else {
-        console.warn(`User ${currentUser.name} (role: ${currentUser.role}) tried to access forbidden view: ${view}`);
+        console.warn(User ${currentUser.name} (role: ${currentUser.role}) tried to access forbidden view: ${view});
       }
     }
   };
@@ -477,8 +473,8 @@ const App: React.FC = () => {
       if (status === OrderStatus.READY) {
           setReadyTables(prevSet => new Set(prevSet).add(updatedOrder.table));
           if (notificationPermission === 'granted') {
-            new Notification(`Order Ready for ${updatedOrder.table}!`, {
-                body: `${updatedOrder.server ? `Hey ${updatedOrder.server}, ` : ''}The order for table ${updatedOrder.table} is ready for pickup.`,
+            new Notification(Order Ready for ${updatedOrder.table}!, {
+                body: ${updatedOrder.server ? Hey ${updatedOrder.server},  : ''}The order for table ${updatedOrder.table} is ready for pickup.,
                 icon: '/vite.svg' 
             });
           }
@@ -565,7 +561,7 @@ const App: React.FC = () => {
   const handleAddReservation = async (newReservationData: Omit<Reservation, 'id' | 'status'>) => {
     const newReservation = await db.addReservation(newReservationData);
     const updatedReservations = [...reservations, newReservation];
-    updatedReservations.sort((a, b) => new Date(`${a.date}T${a.time}`).getTime() - new Date(`${b.date}T${b.time}`).getTime());
+    updatedReservations.sort((a, b) => new Date(a.date + 'T' + a.time).getTime() - new Date(b.date + 'T' + b.time).getTime());
     setReservations(updatedReservations);
   };
 
@@ -750,7 +746,7 @@ const App: React.FC = () => {
 
     // Staff-facing view routing
     if (!currentUser) {
-        return <LoginScreen onLogin={handleLogin} onGoToCustomerReservations={handleGoToCustomerReservations} backendMessage={backendMessage} />;
+        return <LoginScreen onLogin={handleLogin} onGoToCustomerReservations={handleGoToCustomerReservations} />;
     }
 
     const visibleFloorPlanAreas = currentUser?.role === 'Bartender'
