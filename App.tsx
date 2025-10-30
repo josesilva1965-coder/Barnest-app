@@ -154,7 +154,7 @@ const App: React.FC = () => {
       setInventory(dbInventory);
       setTables(dbTables);
       setCustomers(dbCustomers);
-      setReservations(dbReservations.sort((a, b) => new Date(`${a.date}T${a.time}`).getTime() - new Date(`${b.date}T${b.time}`).getTime()));
+      setReservations(dbReservations.sort((a, b) => new Date(a.date + 'T' + a.time).getTime() - new Date(b.date + 'T' + b.time).getTime()));
       setShifts(dbShifts);
       setStaffAvailability(dbStaffAvailability);
       setShiftSwapRequests(dbShiftSwapRequests);
@@ -561,7 +561,7 @@ const App: React.FC = () => {
   const handleAddReservation = async (newReservationData: Omit<Reservation, 'id' | 'status'>) => {
     const newReservation = await db.addReservation(newReservationData);
     const updatedReservations = [...reservations, newReservation];
-    updatedReservations.sort((a, b) => new Date(`${a.date}T${a.time}`).getTime() - new Date(`${b.date}T${b.time}`).getTime());
+    updatedReservations.sort((a, b) => new Date(a.date + 'T' + a.time).getTime() - new Date(b.date + 'T' + b.time).getTime());
     setReservations(updatedReservations);
   };
 
