@@ -249,7 +249,7 @@ const App: React.FC = () => {
       if (permittedViews.includes(view)) {
         _setActiveView(view);
       } else {
-        console.warn(User ${currentUser.name} (role: ${currentUser.role}) tried to access forbidden view: ${view});
+        console.warn(`User ${currentUser.name} (role: ${currentUser.role}) tried to access forbidden view: ${view}`);
       }
     }
   };
@@ -473,8 +473,8 @@ const App: React.FC = () => {
       if (status === OrderStatus.READY) {
           setReadyTables(prevSet => new Set(prevSet).add(updatedOrder.table));
           if (notificationPermission === 'granted') {
-            new Notification(Order Ready for ${updatedOrder.table}!, {
-                body: ${updatedOrder.server ? Hey ${updatedOrder.server},  : ''}The order for table ${updatedOrder.table} is ready for pickup.,
+            new Notification(`Order Ready for ${updatedOrder.table}!`, {
+                body: `${updatedOrder.server ? `Hey ${updatedOrder.server}, ` : ''}The order for table ${updatedOrder.table} is ready for pickup.`,
                 icon: '/vite.svg' 
             });
           }

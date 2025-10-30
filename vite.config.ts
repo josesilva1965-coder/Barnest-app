@@ -6,6 +6,9 @@ export default defineConfig({
       server: {
         port: 3000,
         host: '0.0.0.0',
+        watch: {
+          ignored: ['.env', 'tsconfig.json', 'vite.config.ts'],
+        },
         proxy: {
           '/api': {
             target: 'http://localhost:8000',
@@ -19,5 +22,4 @@ export default defineConfig({
           '@': path.resolve(__dirname, '.'),
         }
       }
-    };
 });
