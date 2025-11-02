@@ -3,7 +3,7 @@ import React from 'react';
 import { View, StaffMember } from '../types';
 import { PosIcon, InventoryIcon, TablesIcon, ReportsIcon, StaffIcon, FeedbackIcon, KdsIcon, CalendarIcon, LogoutIcon, SettingsIcon, DownloadIcon } from './icons/Icons';
 import { ROLE_PERMISSIONS } from '../constants';
-import { useLocalization } from '../../contexts/LocalizationContext';
+import { useLocalization } from '../contexts/LocalizationContext';
 
 interface SidebarProps {
   activeView: View;
