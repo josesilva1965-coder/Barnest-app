@@ -727,7 +727,7 @@ const App: React.FC = () => {
     return <div className="flex items-center justify-center h-screen bg-brand-dark text-red-500 text-2xl">{error}</div>;
   }
 
-  const AppContent = () => {
+  const renderAppContent = () => {
     // Customer-facing view routing
     if (customerView === 'ordering' && customerTableId) {
       const table = tables.find(t => t.id === customerTableId);
@@ -832,7 +832,7 @@ const App: React.FC = () => {
 
   return (
     <LocalizationProvider language={settings.language}>
-      <AppContent />
+      {renderAppContent()}
     </LocalizationProvider>
   )
 };

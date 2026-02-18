@@ -4,7 +4,7 @@ import { View } from '../../types';
 import type { OrderItem, MenuItem, Modifier, Split, Table, Customer, Reward, StaffMember } from '../../types';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
-import { PlusIcon, MinusIcon, TrashIcon, SplitIcon, SparklesIcon, StarIcon, QrCodeIcon } from '../icons/Icons';
+import { PlusIcon, MinusIcon, TrashIcon, SplitIcon, SparklesIcon, StarIcon, QrCodeIcon, CheckIcon, XIcon } from '../icons/Icons';
 import SplitCheckModal from './SplitCheckModal';
 import AIPairingModal from './AIPairingModal';
 import { REWARDS_DATA } from '../../constants';
@@ -173,6 +173,8 @@ const PosScreen: React.FC<PosScreenProps> = ({ selectedTable, selectedCustomer, 
   const [splits, setSplits] = useState<Split[]>([]);
   const [nextInstanceId, setNextInstanceId] = useState(Date.now());
   const [appliedReward, setAppliedReward] = useState<Reward | null>(null);
+  const [isSending, setIsSending] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   
   const categories = useMemo(() => Array.from(new Set(menuItems.map(item => item.category))), [menuItems]);
   const [activeTab, setActiveTab] = useState<string>(categories[0] || '');
@@ -294,11 +296,30 @@ const PosScreen: React.FC<PosScreenProps> = ({ selectedTable, selectedCustomer, 
 
   const handleSendOrder = async () => {
     if (!selectedTable || currentOrder.length === 0) return;
-    const result = await onSendOrder(currentOrder, selectedTable);
-    alert(result.message);
-    // The 'processed' status is unique to the bartender direct-to-tab workflow
-    if (result.status === 'processed') {
-      setActiveView(View.Tables);
+
+    setIsSending(true);
+    setStatusMessage(null);
+
+    try {
+      const result = await onSendOrder(currentOrder, selectedTable);
+
+      setStatusMessage({
+        type: result.status === 'held' ? 'error' : 'success',
+        text: result.message
+      });
+
+      if (result.status !== 'held') {
+        setTimeout(() => setStatusMessage(null), 3000);
+      }
+
+      // The 'processed' status is unique to the bartender direct-to-tab workflow
+      if (result.status === 'processed') {
+        setActiveView(View.Tables);
+      }
+    } catch (e) {
+      setStatusMessage({ type: 'error', text: 'Failed to send order. Please try again.' });
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -457,9 +478,22 @@ const PosScreen: React.FC<PosScreenProps> = ({ selectedTable, selectedCustomer, 
                 <div className="flex justify-between font-bold text-xl"><span>Total</span><span>${orderTotals.totalAfterDiscount.toFixed(2)}</span></div>
                 </div>
                 <div className="space-y-2">
-                    <Button variant="primary" className="w-full bg-blue-600 hover:bg-blue-700 focus:ring-blue-500" onClick={handleSendOrder}>
+                    <Button
+                      variant="primary"
+                      className="w-full bg-blue-600 hover:bg-blue-700 focus:ring-blue-500"
+                      onClick={handleSendOrder}
+                      isLoading={isSending}
+                    >
                         {isBartenderAtBar ? 'Update Tab & Return' : 'Send Order to Kitchen/Bar'}
                     </Button>
+
+                    {statusMessage && (
+                      <div className={`flex items-center gap-2 p-2 rounded text-sm font-semibold ${statusMessage.type === 'success' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                        {statusMessage.type === 'success' ? <CheckIcon className="w-5 h-5" /> : <XIcon className="w-5 h-5" />}
+                        {statusMessage.text}
+                      </div>
+                    )}
+
                      <div className="grid grid-cols-2 gap-2">
                         <Button variant="secondary" className="w-full" onClick={clearOrderAndCloseTable}>
                             Pay at Terminal
