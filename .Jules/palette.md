@@ -1,0 +1,3 @@
+## 2026-02-18 - React Component Definition Inside Parent
+**Learning:** Defining a component (like `AppContent`) inside the render function of another component (`App`) causes the child component to be redefined on every render. This leads to complete unmounting and remounting of the child tree, resetting all local state (like `useState`, focus, scroll position) whenever the parent updates.
+**Action:** Always define components outside of other components. If you need access to parent scope, pass props or use a render function (returning elements directly) rather than using the function as a component (e.g., `{renderContent()}` instead of `<AppContent />`).
