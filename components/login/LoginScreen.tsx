@@ -92,7 +92,15 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onGoToCustomerReserv
           <Card 
             key={staff.id}
             onClick={() => handleSelectStaff(staff)}
-            className="flex flex-col items-center p-6 text-center cursor-pointer hover:border-brand-secondary hover:scale-105 transition-transform duration-200"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleSelectStaff(staff);
+              }
+            }}
+            tabIndex={0}
+            role="button"
+            className="flex flex-col items-center p-6 text-center cursor-pointer hover:border-brand-secondary hover:scale-105 focus:outline-none focus:ring-2 focus:ring-brand-secondary transition-transform duration-200"
             aria-label={`Login as ${staff.name}`}
           >
             <UserIcon className="w-16 h-16 text-brand-secondary mb-4" />
