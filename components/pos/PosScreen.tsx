@@ -16,14 +16,18 @@ const MenuItemCard: React.FC<{
     onSelect: (item: MenuItem) => void;
 }> = ({ item, onSelect }) => {
     return (
-        <Card 
-            className="flex flex-col text-center items-center p-2 cursor-pointer hover:border-brand-secondary transition-all duration-200" 
+        <button
+            type="button"
+            className="w-full h-full text-left focus:outline-none group"
             onClick={() => onSelect(item)}
+            aria-label={`Add ${item.name} to order for $${item.price.toFixed(2)}`}
         >
-            <img src={item.image} alt={item.name} className="w-24 h-24 object-cover rounded-md mb-2"/>
-            <p className="font-semibold text-sm">{item.name}</p>
-            <p className="text-brand-secondary font-bold text-sm">${item.price.toFixed(2)}</p>
-        </Card>
+            <Card className="flex flex-col text-center items-center p-2 h-full transition-all duration-200 border-brand-primary group-hover:border-brand-secondary group-focus:ring-2 group-focus:ring-brand-secondary">
+                <img src={item.image} alt="" className="w-24 h-24 object-cover rounded-md mb-2"/>
+                <p className="font-semibold text-sm">{item.name}</p>
+                <p className="text-brand-secondary font-bold text-sm">${item.price.toFixed(2)}</p>
+            </Card>
+        </button>
     );
 };
 
@@ -382,7 +386,7 @@ const PosScreen: React.FC<PosScreenProps> = ({ selectedTable, selectedCustomer, 
                     canRedeem={appliedReward === null && currentOrder.length > 0}
                 />
             )}
-            <div className="overflow-y-auto flex-1 mb-4 max-h-[calc(100vh-450px)]">
+            <div className="overflow-y-auto flex-1 mb-4 max-h-[calc(100vh-450px)]" role="region" aria-label="Current Order" aria-live="polite">
               {currentOrder.length === 0 ? (
                 <p className="text-gray-400 text-center mt-8">No items in order.</p>
               ) : splits.length > 0 ? (
@@ -431,10 +435,28 @@ const PosScreen: React.FC<PosScreenProps> = ({ selectedTable, selectedCustomer, 
                         <p className="text-sm text-gray-400 mt-1">${calculateItemPrice(item).toFixed(2)}</p>
                       </div>
                       <div className="flex items-center gap-2">
-                          <button onClick={() => updateQuantity(item.instanceId, -1)} className="p-1 rounded-full bg-brand-primary hover:bg-gray-600"><MinusIcon className="w-4 h-4" /></button>
+                          <button
+                            onClick={() => updateQuantity(item.instanceId, -1)}
+                            className="p-1 rounded-full bg-brand-primary hover:bg-gray-600"
+                            aria-label={`Decrease quantity of ${item.name}`}
+                          >
+                            <MinusIcon className="w-4 h-4" />
+                          </button>
                           <span className="font-bold w-6 text-center">{item.quantity}</span>
-                          <button onClick={() => updateQuantity(item.instanceId, 1)} className="p-1 rounded-full bg-brand-primary hover:bg-gray-600"><PlusIcon className="w-4 h-4" /></button>
-                          <button onClick={() => updateQuantity(item.instanceId, -item.quantity)} className="text-red-500 hover:text-red-400 p-1"><TrashIcon className="w-4 h-4" /></button>
+                          <button
+                            onClick={() => updateQuantity(item.instanceId, 1)}
+                            className="p-1 rounded-full bg-brand-primary hover:bg-gray-600"
+                            aria-label={`Increase quantity of ${item.name}`}
+                          >
+                            <PlusIcon className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => updateQuantity(item.instanceId, -item.quantity)}
+                            className="text-red-500 hover:text-red-400 p-1"
+                            aria-label={`Remove ${item.name} from order`}
+                          >
+                            <TrashIcon className="w-4 h-4" />
+                          </button>
                       </div>
                     </li>
                   ))}
