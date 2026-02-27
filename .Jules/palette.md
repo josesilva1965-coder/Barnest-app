@@ -1,0 +1,3 @@
+## 2024-05-24 - [Replaced Interactive Divs with Buttons]
+**Learning:** Interactive cards implemented as `<div>` elements with `onClick` handlers are inaccessible to keyboard users and screen readers by default. They lack native focus states and keyboard activation (Enter/Space).
+**Action:** Replace such patterns with native `<button>` elements. Style them to look like cards if necessary (using `flex`, `w-full`, etc.), but leverage the built-in accessibility features of the `<button>` tag. This immediately fixes tab navigation and screen reader announcement issues without complex ARIA retrofitting.

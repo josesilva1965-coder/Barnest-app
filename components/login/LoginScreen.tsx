@@ -89,16 +89,16 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onGoToCustomerReserv
       <h2 className="text-xl text-gray-400 mb-12">{t('login.selectProfile')}</h2>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
         {STAFF_DATA.map(staff => (
-          <Card 
+          <button
             key={staff.id}
             onClick={() => handleSelectStaff(staff)}
-            className="flex flex-col items-center p-6 text-center cursor-pointer hover:border-brand-secondary hover:scale-105 transition-transform duration-200"
+            className="flex flex-col items-center p-6 text-center cursor-pointer hover:border-brand-secondary hover:scale-105 transition-transform duration-200 bg-brand-dark border border-brand-primary rounded-lg shadow-lg w-full focus:outline-none focus:ring-2 focus:ring-brand-secondary focus:ring-offset-2 focus:ring-offset-brand-dark"
             aria-label={`Login as ${staff.name}`}
           >
             <UserIcon className="w-16 h-16 text-brand-secondary mb-4" />
             <p className="font-bold text-lg text-brand-light">{staff.name}</p>
             <p className="text-sm text-gray-400">{staff.role}</p>
-          </Card>
+          </button>
         ))}
       </div>
       <div className="mt-12 text-center">
