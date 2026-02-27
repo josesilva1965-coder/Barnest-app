@@ -1,7 +1,20 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import type { OrderItem, MenuItem } from '../types';
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+let ai: GoogleGenAI | null = null;
+
+const getAiClient = () => {
+    if (!ai) {
+        const apiKey = process.env.API_KEY;
+        if (!apiKey || apiKey === "undefined") {
+             // In development/test environments without a key, we might want to throw
+             // when the function is actually called, rather than on file load.
+             return null;
+        }
+        ai = new GoogleGenAI({ apiKey });
+    }
+    return ai;
+};
 
 export interface SentimentAnalysisResult {
   sentiment: 'Positive' | 'Negative' | 'Neutral';
@@ -14,8 +27,14 @@ export interface PairingSuggestion {
 }
 
 export const analyzeSentiment = async (text: string): Promise<SentimentAnalysisResult> => {
+  const client = getAiClient();
+  if (!client) {
+      console.warn("Gemini API Key is missing. Returning mock sentiment.");
+      return { sentiment: 'Neutral', keyTopics: ['No API Key'] };
+  }
+
   try {
-    const response = await ai.models.generateContent({
+    const response = await client.models.generateContent({
       model: "gemini-2.5-flash",
       contents: `Analyze the sentiment of the following customer feedback. Identify the key topics mentioned. Feedback: "${text}"`,
       config: {
@@ -62,7 +81,12 @@ export const getPairingSuggestions = async (
     pairingType: 'Wine' | 'Cocktail' | 'Appetizer',
     allMenuItems: MenuItem[]
 ): Promise<PairingSuggestion[]> => {
-    
+    const client = getAiClient();
+    if (!client) {
+         console.warn("Gemini API Key is missing. Returning empty pairings.");
+         return [];
+    }
+
     const menuContext = allMenuItems
         .filter(item => item.category === (pairingType === 'Appetizer' ? 'Food' : 'Drink'))
         .map(item => `${item.name} (${item.subCategory})`).join(', ');
@@ -80,7 +104,7 @@ export const getPairingSuggestions = async (
     `;
 
     try {
-        const response = await ai.models.generateContent({
+        const response = await client.models.generateContent({
             model: "gemini-2.5-flash",
             contents: prompt,
             config: {
