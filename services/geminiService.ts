@@ -1,7 +1,16 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import type { OrderItem, MenuItem } from '../types';
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Use lazy initialization for the AI client to avoid crashing on import if the key is missing.
+let aiInstance: GoogleGenAI | null = null;
+const getAiClient = () => {
+    if (!aiInstance) {
+        // We use import.meta.env for Vite environment variables
+        const apiKey = import.meta.env.VITE_GEMINI_API_KEY || 'dummy_key_to_prevent_crash_during_development';
+        aiInstance = new GoogleGenAI({ apiKey });
+    }
+    return aiInstance;
+};
 
 export interface SentimentAnalysisResult {
   sentiment: 'Positive' | 'Negative' | 'Neutral';
@@ -15,6 +24,7 @@ export interface PairingSuggestion {
 
 export const analyzeSentiment = async (text: string): Promise<SentimentAnalysisResult> => {
   try {
+    const ai = getAiClient();
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: `Analyze the sentiment of the following customer feedback. Identify the key topics mentioned. Feedback: "${text}"`,
@@ -80,6 +90,7 @@ export const getPairingSuggestions = async (
     `;
 
     try {
+        const ai = getAiClient();
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",
             contents: prompt,
