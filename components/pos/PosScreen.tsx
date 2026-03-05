@@ -16,14 +16,19 @@ const MenuItemCard: React.FC<{
     onSelect: (item: MenuItem) => void;
 }> = ({ item, onSelect }) => {
     return (
-        <Card 
-            className="flex flex-col text-center items-center p-2 cursor-pointer hover:border-brand-secondary transition-all duration-200" 
+        <button
             onClick={() => onSelect(item)}
+            className="w-full text-left focus:outline-none focus:ring-2 focus:ring-brand-secondary rounded-lg transition-shadow duration-200"
+            aria-label={`Add ${item.name} to order`}
         >
-            <img src={item.image} alt={item.name} className="w-24 h-24 object-cover rounded-md mb-2"/>
-            <p className="font-semibold text-sm">{item.name}</p>
-            <p className="text-brand-secondary font-bold text-sm">${item.price.toFixed(2)}</p>
-        </Card>
+            <Card
+                className="flex flex-col text-center items-center p-2 cursor-pointer hover:border-brand-secondary transition-all duration-200 h-full"
+            >
+                <img src={item.image} alt={item.name} className="w-24 h-24 object-cover rounded-md mb-2"/>
+                <p className="font-semibold text-sm">{item.name}</p>
+                <p className="text-brand-secondary font-bold text-sm">${item.price.toFixed(2)}</p>
+            </Card>
+        </button>
     );
 };
 
@@ -121,7 +126,8 @@ const CustomerProfileCard: React.FC<CustomerProfileCardProps> = ({ customer, onA
                         <button 
                             key={item.instanceId}
                             onClick={() => onAddToOrder(item)} 
-                            className="bg-brand-primary hover:bg-gray-600 text-xs px-2 py-1 rounded"
+                            className="bg-brand-primary hover:bg-gray-600 text-xs px-2 py-1 rounded focus:outline-none focus:ring-2 focus:ring-brand-secondary"
+                            aria-label={`Add past favorite ${item.name} to order`}
                         >
                             + {item.name}
                         </button>
@@ -336,7 +342,9 @@ const PosScreen: React.FC<PosScreenProps> = ({ selectedTable, selectedCustomer, 
                 <button
                     key={category}
                     onClick={() => setActiveTab(category)}
-                    className={`py-2 px-4 font-semibold ${activeTab === category ? 'text-brand-secondary border-b-2 border-brand-secondary' : 'text-gray-400'}`}
+                    className={`py-2 px-4 font-semibold focus:outline-none focus:ring-2 focus:ring-brand-secondary rounded-t ${activeTab === category ? 'text-brand-secondary border-b-2 border-brand-secondary' : 'text-gray-400'}`}
+                    aria-label={`View ${category} menu`}
+                    aria-current={activeTab === category ? "page" : undefined}
                 >
                     {category}
                 </button>
@@ -347,11 +355,13 @@ const PosScreen: React.FC<PosScreenProps> = ({ selectedTable, selectedCustomer, 
               <button
                 key={sub}
                 onClick={() => setActiveSubCategory(sub)}
-                className={`px-3 py-1 text-sm font-semibold rounded-full transition-colors ${
+                className={`px-3 py-1 text-sm font-semibold rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-brand-secondary ${
                   activeSubCategory === sub
                     ? 'bg-brand-secondary text-white'
                     : 'bg-brand-primary text-gray-300 hover:bg-brand-primary/80'
                 }`}
+                aria-label={sub === 'All' ? `View all ${activeTab} items` : `View ${sub} items`}
+                aria-current={activeSubCategory === sub ? "page" : undefined}
               >
                 {sub}
               </button>
@@ -431,10 +441,10 @@ const PosScreen: React.FC<PosScreenProps> = ({ selectedTable, selectedCustomer, 
                         <p className="text-sm text-gray-400 mt-1">${calculateItemPrice(item).toFixed(2)}</p>
                       </div>
                       <div className="flex items-center gap-2">
-                          <button onClick={() => updateQuantity(item.instanceId, -1)} className="p-1 rounded-full bg-brand-primary hover:bg-gray-600"><MinusIcon className="w-4 h-4" /></button>
-                          <span className="font-bold w-6 text-center">{item.quantity}</span>
-                          <button onClick={() => updateQuantity(item.instanceId, 1)} className="p-1 rounded-full bg-brand-primary hover:bg-gray-600"><PlusIcon className="w-4 h-4" /></button>
-                          <button onClick={() => updateQuantity(item.instanceId, -item.quantity)} className="text-red-500 hover:text-red-400 p-1"><TrashIcon className="w-4 h-4" /></button>
+                          <button aria-label={`Decrease quantity of ${item.name}`} onClick={() => updateQuantity(item.instanceId, -1)} className="p-1 rounded-full bg-brand-primary hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-secondary"><MinusIcon className="w-4 h-4" /></button>
+                          <span className="font-bold w-6 text-center" aria-live="polite">{item.quantity}</span>
+                          <button aria-label={`Increase quantity of ${item.name}`} onClick={() => updateQuantity(item.instanceId, 1)} className="p-1 rounded-full bg-brand-primary hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-secondary"><PlusIcon className="w-4 h-4" /></button>
+                          <button aria-label={`Remove ${item.name} from order`} onClick={() => updateQuantity(item.instanceId, -item.quantity)} className="text-red-500 hover:text-red-400 p-1 focus:outline-none focus:ring-2 focus:ring-red-500 rounded"><TrashIcon className="w-4 h-4" /></button>
                       </div>
                     </li>
                   ))}
