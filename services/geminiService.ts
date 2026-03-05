@@ -1,7 +1,13 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import type { OrderItem, MenuItem } from '../types';
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Lazy initialize to prevent browser crash if API_KEY is missing, per memory guidelines
+let ai: GoogleGenAI | null = null;
+try {
+  ai = new GoogleGenAI({ apiKey: import.meta.env?.VITE_GEMINI_API_KEY || 'dummy_key_for_build' });
+} catch (e) {
+  console.warn("Could not initialize GoogleGenAI", e);
+}
 
 export interface SentimentAnalysisResult {
   sentiment: 'Positive' | 'Negative' | 'Neutral';
