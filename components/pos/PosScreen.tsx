@@ -431,10 +431,10 @@ const PosScreen: React.FC<PosScreenProps> = ({ selectedTable, selectedCustomer, 
                         <p className="text-sm text-gray-400 mt-1">${calculateItemPrice(item).toFixed(2)}</p>
                       </div>
                       <div className="flex items-center gap-2">
-                          <button onClick={() => updateQuantity(item.instanceId, -1)} className="p-1 rounded-full bg-brand-primary hover:bg-gray-600"><MinusIcon className="w-4 h-4" /></button>
-                          <span className="font-bold w-6 text-center">{item.quantity}</span>
-                          <button onClick={() => updateQuantity(item.instanceId, 1)} className="p-1 rounded-full bg-brand-primary hover:bg-gray-600"><PlusIcon className="w-4 h-4" /></button>
-                          <button onClick={() => updateQuantity(item.instanceId, -item.quantity)} className="text-red-500 hover:text-red-400 p-1"><TrashIcon className="w-4 h-4" /></button>
+                          <button aria-label="Decrease quantity" onClick={() => updateQuantity(item.instanceId, -1)} className="p-1 rounded-full bg-brand-primary hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-secondary"><MinusIcon className="w-4 h-4" /></button>
+                          <span className="font-bold w-6 text-center" aria-live="polite">{item.quantity}</span>
+                          <button aria-label="Increase quantity" onClick={() => updateQuantity(item.instanceId, 1)} className="p-1 rounded-full bg-brand-primary hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-secondary"><PlusIcon className="w-4 h-4" /></button>
+                          <button aria-label="Remove item" onClick={() => updateQuantity(item.instanceId, -item.quantity)} className="text-red-500 hover:text-red-400 p-1 focus:outline-none focus:ring-2 focus:ring-red-500 rounded"><TrashIcon className="w-4 h-4" /></button>
                       </div>
                     </li>
                   ))}
