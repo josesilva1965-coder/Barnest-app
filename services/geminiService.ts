@@ -1,7 +1,16 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import type { OrderItem, MenuItem } from '../types';
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+let _aiClient: GoogleGenAI | null = null;
+const getAiClient = (): GoogleGenAI => {
+    if (!_aiClient) {
+        // Try to access the api key, but default to empty string to prevent immediate crashing on load if not set
+        // In a real app this would probably fetch from a secure backend or use Vite's import.meta.env
+        const apiKey = (typeof process !== 'undefined' && process.env?.GEMINI_API_KEY) || import.meta.env?.VITE_GEMINI_API_KEY || "";
+        _aiClient = new GoogleGenAI({ apiKey });
+    }
+    return _aiClient;
+};
 
 export interface SentimentAnalysisResult {
   sentiment: 'Positive' | 'Negative' | 'Neutral';
@@ -15,7 +24,8 @@ export interface PairingSuggestion {
 
 export const analyzeSentiment = async (text: string): Promise<SentimentAnalysisResult> => {
   try {
-    const response = await ai.models.generateContent({
+    const aiClient = getAiClient();
+    const response = await aiClient.models.generateContent({
       model: "gemini-2.5-flash",
       contents: `Analyze the sentiment of the following customer feedback. Identify the key topics mentioned. Feedback: "${text}"`,
       config: {
@@ -80,7 +90,8 @@ export const getPairingSuggestions = async (
     `;
 
     try {
-        const response = await ai.models.generateContent({
+        const aiClient = getAiClient();
+        const response = await aiClient.models.generateContent({
             model: "gemini-2.5-flash",
             contents: prompt,
             config: {
