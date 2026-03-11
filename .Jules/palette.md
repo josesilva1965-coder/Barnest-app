@@ -1,0 +1,1 @@
+## 2024-03-11 - Initial Journal\n**Learning:** Accessibility features like ARIA labels are essential for icon-only buttons.\n**Action:** Add ARIA labels to Plus, Minus, and Trash icon buttons across components.
