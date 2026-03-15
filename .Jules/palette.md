@@ -1,0 +1,3 @@
+## 2026-03-15 - Context-Aware ARIA Labels for Dynamic Lists
+**Learning:** Action buttons within dynamic list items (like cart quantities) must use context-aware `aria-label`s that interpolate the item's name to ensure clear feedback for screen reader users.
+**Action:** Ensure that buttons adjusting quantities or removing items include the item name in their `aria-label` and apply proper focus states.
