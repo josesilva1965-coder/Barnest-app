@@ -1,0 +1,3 @@
+## 2024-05-24 - Context-Aware Labels in Dynamic Lists
+**Learning:** Screen reader users lose context when navigating dynamic lists (like a shopping cart) if icon-only buttons (like + or -) use generic labels (e.g., "Increase quantity"). The user may not know which item the button affects.
+**Action:** Action buttons within dynamic list items must use context-aware `aria-label`s that interpolate the item's name (e.g., `aria-label="Increase quantity of Margherita Pizza"`) to ensure clear feedback for screen reader users. Additionally, containers displaying dynamic numeric values (like cart quantities) should use `aria-live="polite"` to announce updates.
