@@ -1,0 +1,3 @@
+## 2024-03-01 - Accessible POS Cart Buttons
+**Learning:** Action buttons within dynamic list items (e.g., increase/decrease/remove quantity in a cart) must use context-aware `aria-label`s that interpolate the item name (e.g., `aria-label="Increase quantity of Classic Mojito"`). Containers displaying dynamic numeric values (like cart quantities) must use `aria-live="polite"` to ensure screen readers announce updates. Icon-only buttons also need visible focus states (`focus:ring-2 focus:ring-brand-secondary focus:outline-none`).
+**Action:** Always add item-specific `aria-label`s and visible focus states to list action buttons, and use `aria-live="polite"` for dynamic quantities in POS/cart components.
