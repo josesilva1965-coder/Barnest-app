@@ -1,0 +1,3 @@
+## 2025-02-28 - Context-Aware ARIA Labels for Dynamic Action Buttons
+**Learning:** In dynamic lists, like shopping carts or order lists, generic ARIA labels on action buttons (e.g., "Increase quantity") cause confusion for screen reader users because they lack context about *which* item is being affected. Additionally, wrapping the quantity element with `aria-live="polite"` ensures changes are announced.
+**Action:** When creating action buttons within dynamic list items (e.g., increase/decrease/remove), always use context-aware `aria-label`s that interpolate the item's name (e.g., `aria-label={"Decrease quantity of " + item.name}`). Also, use `aria-live` on containers displaying dynamic numeric values.
