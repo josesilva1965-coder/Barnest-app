@@ -16,8 +16,8 @@ const MenuItemCard: React.FC<{
     onSelect: (item: MenuItem) => void;
 }> = ({ item, onSelect }) => {
     return (
-        <Card 
-            className="flex flex-col text-center items-center p-2 cursor-pointer hover:border-brand-secondary transition-all duration-200" 
+        <Card
+            className="flex flex-col text-center items-center p-2 cursor-pointer hover:border-brand-secondary transition-all duration-200"
             onClick={() => onSelect(item)}
         >
             <img src={item.image} alt={item.name} className="w-24 h-24 object-cover rounded-md mb-2"/>
@@ -118,9 +118,9 @@ const CustomerProfileCard: React.FC<CustomerProfileCardProps> = ({ customer, onA
                 <h4 className="font-semibold text-sm text-gray-300">Past Favorites</h4>
                 <div className="flex flex-wrap gap-2 mt-1">
                     {customer.orderHistory.slice(-3).map((item) => (
-                        <button 
+                        <button
                             key={item.instanceId}
-                            onClick={() => onAddToOrder(item)} 
+                            onClick={() => onAddToOrder(item)}
                             className="bg-brand-primary hover:bg-gray-600 text-xs px-2 py-1 rounded"
                         >
                             + {item.name}
@@ -135,9 +135,9 @@ const CustomerProfileCard: React.FC<CustomerProfileCardProps> = ({ customer, onA
                         <StarIcon className="w-5 h-5 text-yellow-400" />
                         <span className="font-bold text-lg text-white">{customer.loyaltyPoints} Points</span>
                     </div>
-                     <Button 
-                        onClick={onRedeemClick} 
-                        disabled={!canRedeem} 
+                     <Button
+                        onClick={onRedeemClick}
+                        disabled={!canRedeem}
                         className="text-xs px-2 py-1 bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500 disabled:bg-gray-500 disabled:hover:bg-gray-500"
                         title={!canRedeem ? "A reward is already applied or no items in order" : "Redeem points"}
                     >
@@ -173,7 +173,7 @@ const PosScreen: React.FC<PosScreenProps> = ({ selectedTable, selectedCustomer, 
   const [splits, setSplits] = useState<Split[]>([]);
   const [nextInstanceId, setNextInstanceId] = useState(Date.now());
   const [appliedReward, setAppliedReward] = useState<Reward | null>(null);
-  
+
   const categories = useMemo(() => Array.from(new Set(menuItems.map(item => item.category))), [menuItems]);
   const [activeTab, setActiveTab] = useState<string>(categories[0] || '');
   const [activeSubCategory, setActiveSubCategory] = useState<string>('All');
@@ -189,7 +189,7 @@ const PosScreen: React.FC<PosScreenProps> = ({ selectedTable, selectedCustomer, 
     setSplits([]);
     setAppliedReward(null);
   }, [tableOrder, selectedTable]);
-  
+
   useEffect(() => {
     if (categories.length > 0 && !categories.includes(activeTab)) {
         setActiveTab(categories[0]);
@@ -223,7 +223,7 @@ const PosScreen: React.FC<PosScreenProps> = ({ selectedTable, selectedCustomer, 
         addToOrder(item, []);
     }
   };
-  
+
   const getModifiersKey = (modifiers: Modifier[]): string => {
     return [...modifiers].sort((a,b) => a.name.localeCompare(b.name)).map(m => m.name).join(',');
   }
@@ -232,7 +232,7 @@ const PosScreen: React.FC<PosScreenProps> = ({ selectedTable, selectedCustomer, 
     const isFromHistory = 'instanceId' in item;
     const itemToAdd = isFromHistory ? { ...item } : { ...item };
     const modifiersForThisItem = isFromHistory ? item.modifiers : modifiers;
-    
+
     const modifiersKey = getModifiersKey(modifiersForThisItem);
     const existingItem = currentOrder.find(orderItem => {
         if (orderItem.id !== item.id) return false;
@@ -266,18 +266,18 @@ const PosScreen: React.FC<PosScreenProps> = ({ selectedTable, selectedCustomer, 
         return prevOrder.map(item => item.instanceId === instanceId ? { ...item, quantity: newQuantity } : item);
     });
   };
-  
+
   const handleConfirmModifiers = (selectedModifiers: Modifier[]) => {
     if (modifierModalItem) {
         addToOrder(modifierModalItem, selectedModifiers);
     }
   };
-  
+
   const handleConfirmSplits = (newSplits: Split[]) => {
       setSplits(newSplits);
       setIsSplitModalOpen(false);
   };
-  
+
   const payForSplit = (splitId: number) => {
     const splitToPay = splits.find(s => s.id === splitId);
     if (splitToPay) {
@@ -285,7 +285,7 @@ const PosScreen: React.FC<PosScreenProps> = ({ selectedTable, selectedCustomer, 
         setSplits(prev => prev.map(split => split.id === splitId ? {...split, status: 'paid'} : split));
     }
   };
-  
+
   const clearOrderAndCloseTable = () => {
     if (!selectedTable) return;
     onProcessPayment(currentOrder);
@@ -327,8 +327,8 @@ const PosScreen: React.FC<PosScreenProps> = ({ selectedTable, selectedCustomer, 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
       <div className="lg:col-span-2 h-full flex flex-col">
-        <Card 
-            title="Menu" 
+        <Card
+            title="Menu"
             className="flex-1 flex flex-col"
         >
           <div className="flex border-b border-brand-primary mb-2">
@@ -361,9 +361,9 @@ const PosScreen: React.FC<PosScreenProps> = ({ selectedTable, selectedCustomer, 
             {menuItems
               .filter((item) => item.category === activeTab && (activeSubCategory === 'All' || item.subCategory === activeSubCategory))
               .map((item) => (
-              <MenuItemCard 
-                key={item.id} 
-                item={item} 
+              <MenuItemCard
+                key={item.id}
+                item={item}
                 onSelect={handleMenuItemClick}
               />
             ))}
@@ -375,9 +375,9 @@ const PosScreen: React.FC<PosScreenProps> = ({ selectedTable, selectedCustomer, 
         <Card title={`Order for ${selectedTable.name}`} className="flex-1 flex flex-col justify-between">
           <div>
             {selectedCustomer && (
-                <CustomerProfileCard 
-                    customer={selectedCustomer} 
-                    onAddToOrder={item => addToOrder(item)} 
+                <CustomerProfileCard
+                    customer={selectedCustomer}
+                    onAddToOrder={item => addToOrder(item)}
                     onRedeemClick={() => setIsRedeemModalOpen(true)}
                     canRedeem={appliedReward === null && currentOrder.length > 0}
                 />
@@ -391,8 +391,8 @@ const PosScreen: React.FC<PosScreenProps> = ({ selectedTable, selectedCustomer, 
                           <Card key={split.id} className={`p-3 ${split.status === 'paid' ? 'bg-green-500/10' : 'bg-brand-primary/30'}`}>
                               <div className="flex justify-between items-center mb-2">
                                   <h4 className="font-bold text-lg">Split {split.id}</h4>
-                                  {split.status === 'paid' ? 
-                                      <span className="font-bold text-green-400">PAID</span> : 
+                                  {split.status === 'paid' ?
+                                      <span className="font-bold text-green-400">PAID</span> :
                                       <span className="font-bold text-brand-secondary">${split.total.toFixed(2)}</span>
                                   }
                               </div>
@@ -431,10 +431,10 @@ const PosScreen: React.FC<PosScreenProps> = ({ selectedTable, selectedCustomer, 
                         <p className="text-sm text-gray-400 mt-1">${calculateItemPrice(item).toFixed(2)}</p>
                       </div>
                       <div className="flex items-center gap-2">
-                          <button aria-label={`Decrease quantity of ${item.name}`} onClick={() => updateQuantity(item.instanceId, -1)} className="p-1 rounded-full bg-brand-primary hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-secondary"><MinusIcon className="w-4 h-4" /></button>
-                          <span aria-live="polite" aria-atomic="true" className="font-bold w-6 text-center">{item.quantity}</span>
-                          <button aria-label={`Increase quantity of ${item.name}`} onClick={() => updateQuantity(item.instanceId, 1)} className="p-1 rounded-full bg-brand-primary hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-secondary"><PlusIcon className="w-4 h-4" /></button>
-                          <button aria-label={`Remove ${item.name} from order`} onClick={() => updateQuantity(item.instanceId, -item.quantity)} className="text-red-500 hover:text-red-400 p-1 focus:outline-none focus:ring-2 focus:ring-red-500"><TrashIcon className="w-4 h-4" /></button>
+                          <button onClick={() => updateQuantity(item.instanceId, -1)} className="p-1 rounded-full bg-brand-primary hover:bg-gray-600"><MinusIcon className="w-4 h-4" /></button>
+                          <span className="font-bold w-6 text-center">{item.quantity}</span>
+                          <button onClick={() => updateQuantity(item.instanceId, 1)} className="p-1 rounded-full bg-brand-primary hover:bg-gray-600"><PlusIcon className="w-4 h-4" /></button>
+                          <button onClick={() => updateQuantity(item.instanceId, -item.quantity)} className="text-red-500 hover:text-red-400 p-1"><TrashIcon className="w-4 h-4" /></button>
                       </div>
                     </li>
                   ))}
@@ -442,7 +442,7 @@ const PosScreen: React.FC<PosScreenProps> = ({ selectedTable, selectedCustomer, 
               )}
             </div>
           </div>
-          
+
           {currentOrder.length > 0 && splits.length === 0 && (
             <div className="border-t border-brand-primary pt-4">
                 <div className="space-y-2 mb-4">
