@@ -1,0 +1,4 @@
+
+## 2024-03-27 - Context-Aware ARIA Labels on Order Quantities
+**Learning:** Icon-only action buttons (like plus/minus/trash) in dynamic lists (e.g. cart/order items) require context-aware `aria-label`s. Without them, screen readers announce generic actions ("Increase quantity") making it impossible to know *which* item is being modified when multiple items are listed. Also, the container holding the numerical quantity needs `aria-live="polite"` so changes are announced dynamically.
+**Action:** When creating any list with interactive icons, interpolate the item's name into the `aria-label` (e.g., ``aria-label={`Decrease quantity of ${item.name}`}``) and use `aria-live` on text values that update based on those actions. Also apply visible focus states (`focus:ring-2` etc.) for keyboard navigation.
