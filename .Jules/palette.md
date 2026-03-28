@@ -1,0 +1,3 @@
+## 2026-03-28 - Context-Aware ARIA Labels for Dynamic Cart Items
+**Learning:** Icon-only buttons in dynamic lists (like cart quantity controls) require context-aware `aria-label`s that interpolate the item name (e.g., "Increase quantity of Margherita Pizza") to ensure screen reader users understand which item they are modifying. Furthermore, the containers for dynamic numeric values like cart quantities should have `aria-live="polite"` to ensure updates are announced.
+**Action:** When creating cart or list item actions, ensure all icon-only buttons have descriptive labels referencing the item, and add `aria-live="polite"` to dynamic text values.
