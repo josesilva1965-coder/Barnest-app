@@ -1,0 +1,3 @@
+## 2024-03-30 - Context-Aware ARIA Labels and Live Regions for Cart Items
+**Learning:** Screen reader users need context when interacting with ambiguous buttons like '+' and '-' in a list of items. Generic labels like 'Increase' aren't enough when tabbing through multiple cart entries. Additionally, dynamic updates to text elements (like quantity counters) aren't announced unless properly configured as live regions.
+**Action:** Always interpolate the item name into action button labels (e.g., `aria-label=\"Increase quantity of ${item.name}\"`) inside dynamic lists. Ensure that spans displaying dynamically changing numbers (like cart quantities) include `aria-live="polite"` and `aria-atomic="true"` to announce state changes correctly without interrupting the user.
