@@ -1,0 +1,3 @@
+## 2024-04-01 - Context-Aware Aria Labels for Cart Buttons
+**Learning:** Icon-only buttons in dynamic lists (like cart quantity controls) require context-aware `aria-label`s. Without dynamic labels (e.g., `aria-label="Increase quantity of Margherita Pizza"` instead of just `aria-label="Increase"`), screen reader users hear repetitive, unhelpful labels and lose context of which list item they are modifying.
+**Action:** Always interpolate the list item's identifying property (like `item.name`) into the `aria-label` for action buttons inside mapped lists or cards, and use `aria-live="polite"` on the quantity display itself.
