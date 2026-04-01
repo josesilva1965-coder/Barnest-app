@@ -199,7 +199,9 @@ const CustomerOrderScreen: React.FC<CustomerOrderScreenProps> = ({ table, menuIt
                         <button
                             key={category}
                             onClick={() => setActiveTab(category)}
-                            className={`py-2 px-4 font-semibold shrink-0 ${activeTab === category ? 'text-brand-secondary border-b-2 border-brand-secondary' : 'text-gray-400'}`}
+                            className={`py-2 px-4 font-semibold shrink-0 focus:outline-none focus:ring-2 focus:ring-brand-secondary ${activeTab === category ? 'text-brand-secondary border-b-2 border-brand-secondary' : 'text-gray-400'}`}
+                            aria-label={`Show ${category} category`}
+                            aria-current={activeTab === category ? 'true' : undefined}
                         >
                             {category}
                         </button>
@@ -210,11 +212,13 @@ const CustomerOrderScreen: React.FC<CustomerOrderScreenProps> = ({ table, menuIt
                         <button
                             key={sub}
                             onClick={() => setActiveSubCategory(sub)}
-                            className={`px-3 py-1 text-sm font-semibold rounded-full transition-colors ${
+                            className={`px-3 py-1 text-sm font-semibold rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-brand-secondary ${
                                 activeSubCategory === sub
                                 ? 'bg-brand-secondary text-white'
                                 : 'bg-brand-primary text-gray-300 hover:bg-brand-primary/80'
                             }`}
+                            aria-label={`Filter by ${sub} sub-category`}
+                            aria-pressed={activeSubCategory === sub}
                         >
                             {sub}
                         </button>
@@ -255,9 +259,27 @@ const CustomerOrderScreen: React.FC<CustomerOrderScreenProps> = ({ table, menuIt
                                         <p className="text-sm text-gray-400">${(item.price + item.modifiers.reduce((a,c)=>a+c.priceChange,0)).toFixed(2)}</p>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <button onClick={() => updateNewItemQuantity(item.instanceId, -1)} className="p-1 rounded-full bg-brand-primary hover:bg-gray-600"><MinusIcon className="w-4 h-4" /></button>
-                                        <span className="font-bold w-6 text-center">{item.quantity}</span>
-                                        <button onClick={() => updateNewItemQuantity(item.instanceId, 1)} className="p-1 rounded-full bg-brand-primary hover:bg-gray-600"><PlusIcon className="w-4 h-4" /></button>
+                                        <button
+                                            onClick={() => updateNewItemQuantity(item.instanceId, -1)}
+                                            className="p-1 rounded-full bg-brand-primary hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-secondary"
+                                            aria-label={`Decrease quantity of ${item.name}`}
+                                        >
+                                            <MinusIcon className="w-4 h-4" />
+                                        </button>
+                                        <span
+                                            className="font-bold w-6 text-center"
+                                            aria-live="polite"
+                                            aria-atomic="true"
+                                        >
+                                            {item.quantity}
+                                        </span>
+                                        <button
+                                            onClick={() => updateNewItemQuantity(item.instanceId, 1)}
+                                            className="p-1 rounded-full bg-brand-primary hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-secondary"
+                                            aria-label={`Increase quantity of ${item.name}`}
+                                        >
+                                            <PlusIcon className="w-4 h-4" />
+                                        </button>
                                     </div>
                                 </div>
                             ))}
