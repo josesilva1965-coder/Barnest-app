@@ -1,0 +1,3 @@
+## 2025-04-04 - [Context-Aware ARIA Labels for Dynamic Lists]
+**Learning:** Adding static ARIA labels like "Increase quantity" to list items in dynamic carts (like POS systems) causes screen reader users to lose context of *which* item's quantity they are changing when tabbing through long lists.
+**Action:** Always interpolate the specific item's name into the `aria-label` (e.g., `aria-label="Increase quantity of Wagyu Burger"`) for action buttons within dynamic lists, and pair with `aria-live` on the quantity display.
