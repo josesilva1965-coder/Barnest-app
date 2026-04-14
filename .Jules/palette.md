@@ -1,0 +1,3 @@
+## 2024-04-14 - Context-Aware ARIA Labels on List Items
+**Learning:** Repetitive list item actions (like `+`, `-`, or `Remove` in a cart) cause confusion for screen reader users if they only announce the action ("Increase") without context. Additionally, dynamic number values like quantities need `aria-live` to be announced when updated via button clicks.
+**Action:** Always interpolate the item name into the `aria-label` for list item actions (e.g., `aria-label="Decrease quantity of ${item.name}"`), and wrap numeric values updated via buttons in an `aria-live="polite" aria-atomic="true"` container.
