@@ -246,7 +246,16 @@ const CustomerOrderScreen: React.FC<CustomerOrderScreenProps> = ({ table, menuIt
             {isCartOpen && (
                 <div className="fixed inset-0 bg-black/70 z-40" onClick={() => setIsCartOpen(false)}>
                     <div className="fixed bottom-0 left-0 right-0 bg-brand-dark p-4 rounded-t-lg max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
-                        <h2 className="text-2xl font-bold mb-4">Your New Items</h2>
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-2xl font-bold">Your New Items</h2>
+                            <button
+                                onClick={() => setIsCartOpen(false)}
+                                className="p-2 text-gray-400 hover:text-white focus-visible:ring-2 focus-visible:ring-brand-secondary focus:outline-none rounded-full"
+                                aria-label="Close cart"
+                            >
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
                         <div className="flex-1 overflow-y-auto space-y-3 pr-2">
                             {newItemsInCart.map(item => (
                                 <div key={item.instanceId} className="flex justify-between items-center bg-brand-primary/50 p-2 rounded">
@@ -255,9 +264,23 @@ const CustomerOrderScreen: React.FC<CustomerOrderScreenProps> = ({ table, menuIt
                                         <p className="text-sm text-gray-400">${(item.price + item.modifiers.reduce((a,c)=>a+c.priceChange,0)).toFixed(2)}</p>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <button onClick={() => updateNewItemQuantity(item.instanceId, -1)} className="p-1 rounded-full bg-brand-primary hover:bg-gray-600"><MinusIcon className="w-4 h-4" /></button>
-                                        <span className="font-bold w-6 text-center">{item.quantity}</span>
-                                        <button onClick={() => updateNewItemQuantity(item.instanceId, 1)} className="p-1 rounded-full bg-brand-primary hover:bg-gray-600"><PlusIcon className="w-4 h-4" /></button>
+                                        <button
+                                            onClick={() => updateNewItemQuantity(item.instanceId, -1)}
+                                            className="p-1 rounded-full bg-brand-primary hover:bg-gray-600 focus-visible:ring-2 focus-visible:ring-brand-secondary focus:outline-none"
+                                            aria-label={`Decrease quantity of ${item.name}`}
+                                        >
+                                            <MinusIcon className="w-4 h-4" />
+                                        </button>
+                                        <span className="font-bold w-6 text-center" aria-live="polite" aria-atomic="true">
+                                            {item.quantity}
+                                        </span>
+                                        <button
+                                            onClick={() => updateNewItemQuantity(item.instanceId, 1)}
+                                            className="p-1 rounded-full bg-brand-primary hover:bg-gray-600 focus-visible:ring-2 focus-visible:ring-brand-secondary focus:outline-none"
+                                            aria-label={`Increase quantity of ${item.name}`}
+                                        >
+                                            <PlusIcon className="w-4 h-4" />
+                                        </button>
                                     </div>
                                 </div>
                             ))}
