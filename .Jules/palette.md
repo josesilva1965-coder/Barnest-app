@@ -1,0 +1,4 @@
+
+## 2024-05-18 - Context-Aware ARIA Labels for Dynamic Lists
+**Learning:** Icon-only action buttons within dynamic list items (like increase/decrease/remove quantity buttons in a shopping cart) need context-aware `aria-label`s. If they simply say "Decrease quantity", screen reader users tabbing through the cart won't know *which* item's quantity they are changing. The label must interpolate the item's name (e.g., "Decrease quantity of Wagyu Burger"). Additionally, dynamic text updates (like the quantity number changing) require `aria-live="polite"` and `aria-atomic="true"` on the container so the screen reader announces the new value when it changes.
+**Action:** Always check if icon buttons are inside a map or list. If so, interpolate a unique identifier or name into the `aria-label`. Always add `aria-live` to elements whose text content updates dynamically in place without a page reload.
