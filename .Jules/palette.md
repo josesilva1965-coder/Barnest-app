@@ -1,0 +1,3 @@
+## 2024-05-01 - Context-Aware ARIA Labels for List Items
+**Learning:** Found that generic icon-only buttons (like plus/minus/trash for quantity) in repeating lists (like a shopping cart) lack context for screen readers. Using simple `aria-label="Increase"` is confusing when multiple items exist. It is also important to use `aria-live="polite"` on the quantity element so the user receives confirmation of the change.
+**Action:** Always interpolate the item's name into the `aria-label` (e.g., `aria-label={"Increase quantity of " + item.name}`) and ensure the changing value has `aria-live` set so screen readers announce it properly.

@@ -255,9 +255,9 @@ const CustomerOrderScreen: React.FC<CustomerOrderScreenProps> = ({ table, menuIt
                                         <p className="text-sm text-gray-400">${(item.price + item.modifiers.reduce((a,c)=>a+c.priceChange,0)).toFixed(2)}</p>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <button onClick={() => updateNewItemQuantity(item.instanceId, -1)} className="p-1 rounded-full bg-brand-primary hover:bg-gray-600"><MinusIcon className="w-4 h-4" /></button>
-                                        <span className="font-bold w-6 text-center">{item.quantity}</span>
-                                        <button onClick={() => updateNewItemQuantity(item.instanceId, 1)} className="p-1 rounded-full bg-brand-primary hover:bg-gray-600"><PlusIcon className="w-4 h-4" /></button>
+                                        <button aria-label={`Decrease quantity of ${item.name}`} onClick={() => updateNewItemQuantity(item.instanceId, -1)} className="p-1 rounded-full bg-brand-primary hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-secondary"><MinusIcon className="w-4 h-4" /></button>
+                                        <span className="font-bold w-6 text-center" aria-live="polite">{item.quantity}</span>
+                                        <button aria-label={`Increase quantity of ${item.name}`} onClick={() => updateNewItemQuantity(item.instanceId, 1)} className="p-1 rounded-full bg-brand-primary hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-secondary"><PlusIcon className="w-4 h-4" /></button>
                                     </div>
                                 </div>
                             ))}
