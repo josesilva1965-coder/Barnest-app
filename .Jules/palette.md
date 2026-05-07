@@ -1,0 +1,3 @@
+## 2026-05-07 - Context-Aware Cart Action Accessibility
+**Learning:** Cart adjustment buttons (Plus/Minus/Trash) using icon-only designs often lack explicit labels. Adding `aria-label` with context like `{item.name}` enables clear voice announcements, while applying focus states directly on buttons improves keyboard navigation. Using `aria-live='polite'` on the quantity display keeps users informed of state changes dynamically.
+**Action:** Whenever creating or updating a dynamic list of items with action buttons (like carts or schedules), ensure each button receives a dynamic `aria-label` identifying the item, and the result display has `aria-live` applied.
