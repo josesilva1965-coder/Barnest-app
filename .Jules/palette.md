@@ -1,0 +1,3 @@
+## 2024-05-09 - Context-Aware Cart Accessibility
+**Learning:** Generic icon-only buttons (like "+" or "-") in dynamic cart list items lack sufficient context for screen reader users, making it impossible to know *which* item's quantity is being changed. Additionally, dynamic number displays (like cart quantities) must use `aria-live` and `aria-atomic` to announce updates properly.
+**Action:** Always interpolate the dynamic item's name into the `aria-label` of action buttons within lists (e.g., "Decrease quantity of {item.name}"). Apply `aria-live="polite"` and `aria-atomic="true"` to containers showing dynamic numeric values that update without a page reload.
