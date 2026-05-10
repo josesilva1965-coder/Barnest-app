@@ -1,0 +1,3 @@
+## 2024-05-24 - Screen Reader Support for Cart Actions
+**Learning:** Icon-only buttons (like Plus, Minus, Trash) in dynamic lists (like shopping carts) are inaccessible to screen readers without context. Users need to know *which* item's quantity they are changing. Additionally, dynamic quantity changes need `aria-live` to announce the update, and keyboard users need clear focus rings.
+**Action:** Always add context-aware `aria-label`s (e.g., "Decrease quantity of [Item Name]") to list action buttons. Ensure visible focus states (`focus-visible:ring-2`) exist. Wrap dynamic numeric values in `aria-live="polite" aria-atomic="true"` containers.
