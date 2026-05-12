@@ -1,0 +1,4 @@
+
+## 2024-05-12 - Dynamic Cart Quantities and Context-Aware ARIA Labels
+**Learning:** Screen readers will not announce dynamic numeric updates (like item quantities increasing/decreasing in a cart) unless the numeric container explicitly uses `aria-live="polite"` and `aria-atomic="true"`. Furthermore, action buttons within dynamic list items (e.g., "+" or "-" in a cart) must use context-aware `aria-label`s that interpolate the item's name (e.g., `aria-label="Increase quantity of Wagyu Burger"`) to provide clear feedback and avoid ambiguity for screen reader users.
+**Action:** Always verify that dynamic numeric displays, especially in highly interactive components like carts or forms, are properly annotated with ARIA live regions. Ensure that generic action buttons within iterated lists include the item's name in their `aria-label`.
