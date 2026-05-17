@@ -1,0 +1,3 @@
+## 2026-05-17 - Dynamic list item actions need context
+**Learning:** Action buttons within dynamic list items (e.g., increase/decrease/remove quantity in a cart) must use context-aware `aria-label`s that interpolate the item's name to ensure clear feedback for screen reader users. Also dynamic numeric values (like cart quantities) must use `aria-live="polite"` and `aria-atomic="true"` on containers to ensure screen readers announce updates accurately.
+**Action:** When adding cart items or other dynamic lists, include the item name in button labels (e.g., `aria-label={\`Decrease quantity of \${item.name}\`}`) and add live region attributes to the quantity wrapper.
