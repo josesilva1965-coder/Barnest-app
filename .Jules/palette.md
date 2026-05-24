@@ -1,0 +1,3 @@
+## 2024-05-24 - Context-Aware ARIA Labels for Dynamic Cart Items
+**Learning:** Icon-only buttons within dynamic list items (like increase/decrease/remove quantity buttons in a shopping cart) can be confusing for screen reader users if they just say "plus" or "minus". Furthermore, dynamic numeric values like cart quantities are not always announced when they change.
+**Action:** Use context-aware `aria-label`s that interpolate the item's name (e.g., `` `Decrease quantity of ${item.name}` ``). Additionally, use `aria-live="polite"` and `aria-atomic="true"` on the text element displaying the dynamic quantity so screen readers announce updates accurately. Apply this pattern to all list-based action buttons in the design system.
