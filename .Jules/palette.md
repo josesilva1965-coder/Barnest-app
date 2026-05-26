@@ -1,0 +1,3 @@
+## 2024-05-24 - Context-Aware ARIA Labels in Dynamic Lists
+**Learning:** Action buttons inside dynamic lists (like cart item quantity +/- or remove buttons) need context-aware `aria-label`s that interpolate the item's name. Otherwise, screen reader users will just hear "plus, minus, trash" multiple times without knowing which item they are modifying. Additionally, containers for dynamic numeric values (like the cart quantity itself) need `aria-live="polite"` and `aria-atomic="true"` to accurately announce updates.
+**Action:** When adding or reviewing lists of items with individual action controls, always interpolate the item's identity into the `aria-label` (e.g., `aria-label={"Decrease quantity of " + item.name}`) and ensure dynamic values are marked as live regions.
