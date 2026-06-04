@@ -1,0 +1,3 @@
+## 2026-06-04 - Accessible Numeric Controls in Cart
+**Learning:** For dynamic quantity adjusters in shopping carts or POS systems, it's not enough for the plus/minus buttons to be visible; they require context-aware `aria-label`s (like `Increase quantity of Wagyu Burger`) because otherwise screen readers just read "plus" or "minus". Furthermore, the numeric value being adjusted needs `aria-live="polite"` and `aria-atomic="true"` so that the screen reader announces the new number automatically when the user clicks the button.
+**Action:** Always add interpolated `aria-label`s to action buttons within dynamic list items, and `aria-live` to the adjacent numeric span.
