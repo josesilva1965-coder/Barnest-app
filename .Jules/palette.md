@@ -1,0 +1,3 @@
+## 2026-06-05 - Cart Interaction Accessibility
+**Learning:** Icon-only buttons for quantity adjustments (like in cart and POS lists) often lack accessible names, making them difficult for screen reader users to distinguish which item's quantity is being changed. Additionally, dynamic quantity updates aren't announced if not wrapped in `aria-live` regions. Visible focus states are critical for keyboard navigation.
+**Action:** Use context-aware `aria-label`s (e.g., `aria-label={"Decrease quantity of " + item.name}`) for action buttons within dynamic lists. Add `focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary` for clear keyboard focus, and use `aria-live="polite" aria-atomic="true"` on dynamic numeric value containers.
