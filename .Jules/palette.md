@@ -1,0 +1,3 @@
+## 2024-11-20 - Accessible Cart Item Controls
+**Learning:** Icon-only buttons used for adjusting quantities in dynamic list items (like shopping carts) often lack screen reader support, leaving visually impaired users unable to identify the action or the specific item being modified. Additionally, dynamic number updates (like the cart quantity) need `aria-live` regions to announce changes appropriately.
+**Action:** Implemented context-aware `aria-label`s that interpolate the item's name on icon-only action buttons. Added `aria-live="polite"` and `aria-atomic="true"` on containers displaying dynamic numeric values. Added visible focus states (`focus:ring-2`) for keyboard accessibility.
