@@ -1,0 +1,3 @@
+## 2024-06-09 - Added ARIA labels to Plus/Minus/Trash icon buttons
+**Learning:** Icon-only buttons used for updating quantities or removing items in the cart (e.g. `MinusIcon`, `PlusIcon`, `TrashIcon`) lacked `aria-label` attributes and focus states for keyboard accessibility. Screen reader users would hear "button" without context, and keyboard users lacked clear visual feedback when tabbing to these controls.
+**Action:** Always add descriptive `aria-label`s (interpolating the item name for context where possible, e.g., "Decrease quantity of ${item.name}") and ensure visible focus states (`focus:ring-2 focus:ring-brand-secondary focus:outline-none`) on all icon-only buttons.
