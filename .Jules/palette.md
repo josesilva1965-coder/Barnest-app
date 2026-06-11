@@ -1,0 +1,3 @@
+## $(date +%Y-%m-%d) - Context-Aware Cart Screen Reader Updates
+**Learning:** Icon-only buttons for modifying cart quantities in interactive lists (like POS or customer orders) lack context when focused, making them confusing for screen reader users. Additionally, numeric quantity updates are not announced natively.
+**Action:** Always interpolate the item's name into the `aria-label` (e.g., `aria-label="Increase quantity of ${item.name}"`) for list actions, and wrap dynamic quantity spans with `aria-live="polite"` and `aria-atomic="true"` to ensure seamless audio feedback during user interaction.
