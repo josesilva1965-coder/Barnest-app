@@ -1,0 +1,3 @@
+## 2026-06-12 - Missing ARIA Labels on Cart Action Buttons
+**Learning:** Found multiple instances in `components/pos/PosScreen.tsx` and `components/customer/CustomerOrderScreen.tsx` where icon-only buttons (Minus, Plus, Trash) are missing `aria-label` attributes and visible focus states, making them inaccessible to screen readers and difficult to use via keyboard navigation. Additionally, the item name needs to be interpolated in the label for context.
+**Action:** Update the code to include descriptive `aria-label` attributes interpolating `item.name` (e.g., `Decrease quantity of ${item.name}`) and add `focus:ring-2 focus:ring-brand-secondary focus:outline-none` or `focus-visible` to icon-only buttons to ensure they are accessible.
