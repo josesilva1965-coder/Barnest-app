@@ -1,0 +1,3 @@
+## 2024-05-18 - Dynamic context-aware labels and live regions in cart experiences
+**Learning:** Icon-only action buttons within dynamic list items (e.g., increase/decrease/remove quantity in a cart) lack clear feedback for screen reader users unless they use context-aware `aria-label`s that interpolate the item's name. Additionally, changes to the dynamic numeric values (like cart quantities) need `aria-live="polite"` and `aria-atomic="true"` on the container to ensure screen readers announce updates accurately.
+**Action:** Always include item names in `aria-label` attributes for list item actions, add visible focus states and `title` attributes for mouse users, and use `aria-live` attributes for dynamically updating values.
