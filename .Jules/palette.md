@@ -1,0 +1,3 @@
+## 2023-10-27 - Context-Aware Cart Interactions
+**Learning:** Icon-only action buttons within dynamic list items (like cart quantities) cause significant confusion for screen reader users if they share identical generic labels (e.g., multiple "Increase" buttons). Additionally, dynamically changing numeric values are invisible to screen readers unless specifically marked.
+**Action:** Always interpolate item names into `aria-label`s and `title` attributes for list actions (e.g., "Increase quantity of Wagyu Burger"). Wrap dynamic quantity numbers in `aria-live="polite"` and `aria-atomic="true"` containers.
