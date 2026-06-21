@@ -1,0 +1,3 @@
+## 2024-05-24 - Dynamic Cart Controls
+**Learning:** Icon-only buttons within dynamic lists (like cart quantities) require context-aware `aria-label`s and native `title` attributes to be fully accessible to screen reader and mouse users. Also, dynamic numeric values like cart quantities should be wrapped in `aria-live="polite"` containers to ensure updates are announced accurately.
+**Action:** Always interpolate the item's name into `aria-label` and `title` for action buttons in lists, add `focus-visible` utility classes for keyboard navigation, and use `aria-live="polite"` `aria-atomic="true"` on dynamically changing numeric displays.
