@@ -1,0 +1,3 @@
+## 2024-05-18 - Accessible Context-Aware Cart Controls
+**Learning:** Icon-only buttons within dynamic lists (like cart quantities) become a generic "button, button, button" experience for screen reader users if labels are static. Adding context-aware `aria-label`s (e.g., "Decrease quantity of Wagyu Burger"), combining with native `title` for mouse users, and `aria-live` on the quantity value creates a vastly superior, multi-modal accessible experience.
+**Action:** Always interpolate item names into `aria-label`s for list item actions, ensure focus states are visible, and wrap dynamic numbers in `aria-live="polite"` regions.
