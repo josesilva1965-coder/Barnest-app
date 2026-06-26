@@ -1,0 +1,3 @@
+## 2024-06-26 - Accessible Cart Controls
+**Learning:** Icon-only action buttons in dynamic lists (like cart item quantity +/-/remove) need context-aware `aria-label`s and native `title`s to interpolate item names (e.g. `Decrease quantity of Wagyu Burger`). Dynamic quantity values also need `aria-live="polite"` and `aria-atomic="true"` to ensure screen readers announce numeric updates properly. Furthermore, visible focus states are critical for keyboard navigation.
+**Action:** When creating icon-only action buttons for list items, use context-aware labels, add `title` tooltips, apply `focus:outline-none focus:ring-2`, and wrap dynamically updated numbers in `aria-live="polite"` containers.
