@@ -1,0 +1,3 @@
+## 2026-06-30 - POS Screen Cart Item Controls Accessibility Improvement
+**Learning:** Icon-only buttons for quantity controls and item removal inside a dynamic cart list are often missed by screen readers if they lack `aria-label`s, and users with motor difficulties require visible focus states. Furthermore, numeric updates (like quantity changes) within the cart need `aria-live` regions to announce changes effectively.
+**Action:** Always include context-aware `aria-label` and `title` attributes that interpolate the item name on icon-only action buttons. Ensure interactive elements have visible focus rings (`focus:ring-2`), and use `aria-live="polite"` alongside `aria-atomic="true"` on containers displaying dynamic numeric values.
