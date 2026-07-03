@@ -1,0 +1,3 @@
+## 2024-05-18 - Improved Cart Accessibility
+**Learning:** Icon-only action buttons in the POS and Customer cart (like -, +, and trash) need explicit `aria-label` and `title` attributes for screen readers and mouse hover tooltips. Also, dynamic numeric values like cart quantities should be wrapped in elements with `aria-live="polite"` and `aria-atomic="true"` to ensure screen readers announce updates. Finally, missing focus rings make keyboard navigation difficult.
+**Action:** Always add `aria-label`, `title`, and visible focus rings (`focus:outline-none focus:ring-2`) to icon-only buttons, and use `aria-live="polite"` on dynamic counters.
