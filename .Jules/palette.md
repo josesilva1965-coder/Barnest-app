@@ -1,0 +1,3 @@
+## 2024-10-24 - Cart Quantity Accessibility
+**Learning:** Dynamic numeric values (like cart quantities) aren't announced by screen readers when updated via icon-only buttons, leaving users unaware of the state change. Icon-only buttons also lack hover tooltips for mouse users and clear focus states for keyboard users.
+**Action:** Always add `aria-live="polite"` and `aria-atomic="true"` to containers displaying dynamic numeric values. For icon-only action buttons, provide an `aria-label` for screen readers, a `title` attribute for mouse hover tooltips, and a visible focus state (e.g., `focus-visible:ring-2 focus-visible:outline-none`) for keyboard accessibility.
